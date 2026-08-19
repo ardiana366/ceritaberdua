@@ -49,21 +49,17 @@
   <div id="roomGatewayScreen" class="fixed inset-0 z-50 bg-slate-100 flex flex-col justify-between p-5 max-w-sm mx-auto h-full scrollable-content">
     <div class="my-auto space-y-6">
       
-      <!-- Brand & Welcome -->
       <div class="text-center space-y-2">
         <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-3xl border border-rose-100 shadow-sm">
           <i data-lucide="layers" class="w-8 h-8"></i>
         </div>
         <h1 class="text-2xl font-black tracking-tight text-slate-900">Deep Talk Deck</h1>
         <p class="text-xs text-slate-500 max-w-[240px] mx-auto leading-relaxed">
-          Tanya jawab terstruktur dan jujur bersama calon pasangan.
+          Tanya jawab bergantian secara terstruktur bersama pasangan.
         </p>
       </div>
 
-      <!-- Main Gateway Card -->
       <div class="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-xl space-y-4">
-        
-        <!-- Pilihan Peran -->
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-2">Pilih Peranmu</label>
           <div class="grid grid-cols-2 gap-2.5">
@@ -78,7 +74,6 @@
           </div>
         </div>
 
-        <!-- Input Kode Room -->
         <div class="space-y-1.5 pt-1">
           <div class="flex items-center justify-between">
             <label class="text-xs font-bold text-slate-700">Nama / Kode Room</label>
@@ -93,7 +88,6 @@
           <p class="text-[10px] text-slate-400">Gunakan kode yang sama di HP pasanganmu.</p>
         </div>
 
-        <!-- Tombol Masuk / Join -->
         <button id="btnEnterRoom" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 flex items-center justify-center gap-2">
           <span>Mulai Diskusi</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -102,24 +96,21 @@
 
     </div>
 
-    <!-- Footer Gateway -->
     <div class="text-center py-2 shrink-0">
       <p class="text-[11px] text-slate-400">Sinkronisasi Realtime via Cloud</p>
     </div>
   </div>
 
   <!-- ======================================================== -->
-  <!-- 1. HEADER UTAMA (APP SCREEN)                             -->
+  <!-- 1. HEADER UTAMA                                          -->
   <!-- ======================================================== -->
   <header class="flex items-center justify-between z-20 shrink-0">
     <div class="flex items-center gap-2">
-      <!-- Role Badge -->
       <button id="btnSwitchRole" class="px-2.5 py-1.5 rounded-2xl border shadow-sm flex items-center gap-1.5 transition active:scale-95 bg-white border-slate-200">
         <i id="roleBadgeIcon" data-lucide="user" class="w-3.5 h-3.5 text-slate-700"></i>
         <span id="roleBadgeText" class="text-xs font-bold text-slate-800">Pria</span>
       </button>
 
-      <!-- Room Session Badge & Change Room -->
       <button id="btnExitRoom" class="flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-2xl px-2.5 py-1.5 text-xs shadow-sm hover:border-rose-200 transition active:scale-95" title="Ganti Room">
         <i data-lucide="key" class="w-3 h-3 text-rose-500"></i>
         <span id="currentRoomText" class="font-mono text-[11px] font-bold text-slate-700">RUANG-KITA</span>
@@ -127,7 +118,6 @@
       </button>
     </div>
 
-    <!-- Tombol Cara Bermain -->
     <button id="btnOpenHint" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 rounded-2xl text-slate-700 hover:text-slate-900 shadow-sm active:scale-95 transition text-xs font-semibold">
       <i data-lucide="help-circle" class="w-3.5 h-3.5 text-rose-500"></i>
       <span>Cara Bermain</span>
@@ -140,7 +130,7 @@
   <main id="mainSlider" class="relative flex-1 w-full max-w-sm mx-auto my-auto flex card-transition" style="transform: translateX(0%);">
     
     <!-- PANEL A: MODE MENJAWAB / LOOPING DECK -->
-    <div id="deckPanel" class="w-full shrink-0 h-full flex flex-col justify-center relative">
+    <div id="deckPanel" class="w-full shrink-0 h-full flex flex-col justify-center relative touch-pan-y">
       
       <!-- Empty State -->
       <div id="emptyDeck" class="hidden flex-col items-center justify-center text-center p-6 space-y-4 bg-white/80 border border-slate-200 rounded-3xl w-full h-[78dvh] shadow-sm">
@@ -148,13 +138,13 @@
           <i data-lucide="inbox" class="w-8 h-8"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Belum Ada Kartu Pertanyaan</h3>
-          <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser ke kiri (Swipe Left) di layar untuk membuat pertanyaan pertama untuk pasanganmu.</p>
+          <h3 class="text-base font-bold text-slate-800">Belum Ada Pertanyaan</h3>
+          <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan pertama bagi pasanganmu.</p>
         </div>
-        <div class="text-[11px] text-rose-500 font-semibold flex items-center gap-1">
+        <button id="btnEmptyAdd" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-2xl font-semibold shadow-md shadow-rose-500/20 transition flex items-center gap-1.5 mx-auto">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          <span>Swipe Left untuk mulai</span>
-        </div>
+          <span>Swipe Left / Klik Disini</span>
+        </button>
       </div>
 
       <!-- Container Tumpukan Kartu 3D -->
@@ -162,7 +152,7 @@
     </div>
 
     <!-- PANEL B: MODE BUAT PERTANYAAN (UNTUK PASANGAN) -->
-    <div id="createPanel" class="w-full shrink-0 h-full flex flex-col justify-center pl-4">
+    <div id="createPanel" class="w-full shrink-0 h-full flex flex-col justify-center pl-4 touch-pan-y">
       <div class="bg-white border border-slate-200 rounded-3xl p-5 w-full h-[78dvh] flex flex-col justify-between shadow-xl">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
           <div class="flex items-center gap-2">
@@ -220,15 +210,15 @@
       <div class="space-y-3 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
         <div class="flex items-center gap-3">
           <span class="p-2 bg-rose-100 text-rose-600 rounded-xl shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Up:</strong> Lanjut ke pertanyaan berikutnya. Kartu berputar ke antrean belakang.</p>
+          <p><strong class="text-slate-800">Swipe Up:</strong> Lanjut ke pertanyaan berikutnya. Kartu berputar ke belakang.</p>
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0"><i data-lucide="arrow-left" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Left:</strong> Buat pertanyaan khusus untuk dijawab oleh dia.</p>
+          <p><strong class="text-slate-800">Swipe Left:</strong> Buka layar untuk membuat pertanyaan bagi dia.</p>
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0"><i data-lucide="arrow-right" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari form pembuatan pertanyaan ke kartu.</p>
+          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari layar pembuatan pertanyaan ke kartu.</p>
         </div>
       </div>
 
@@ -256,7 +246,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // State Aplikasi
     let currentRoom = localStorage.getItem('deeptalk_room') || '';
     let myRole = localStorage.getItem('deeptalk_role') || 'male';
     let tempGatewayRole = myRole;
@@ -278,6 +267,7 @@
     const currentRoomText = document.getElementById('currentRoomText');
 
     const slider = document.getElementById('mainSlider');
+    const deckPanel = document.getElementById('deckPanel');
     const deckContainer = document.getElementById('deckContainer');
     const emptyDeck = document.getElementById('emptyDeck');
     const hintModal = document.getElementById('hintModal');
@@ -286,7 +276,7 @@
     const targetQuestionLabel = document.getElementById('targetQuestionLabel');
 
     // ==========================================
-    // LOGIKA GATEWAY & ROOM SETUP
+    // GATEWAY & ROOM SETUP
     // ==========================================
     function updateGatewayRoleButtons() {
       if (tempGatewayRole === 'male') {
@@ -302,7 +292,6 @@
     btnGatewayMale.onclick = () => { tempGatewayRole = 'male'; updateGatewayRoleButtons(); };
     btnGatewayFemale.onclick = () => { tempGatewayRole = 'female'; updateGatewayRoleButtons(); };
 
-    // Acak kode room
     btnGenRoom.onclick = () => {
       const words = ['KITA', 'DEEPTALK', 'CERITA', 'RASA', 'IMPIAN', 'VISI'];
       const randomWord = words[Math.floor(Math.random() * words.length)];
@@ -310,7 +299,6 @@
       gatewayRoomInput.value = `${randomWord}-${randomNum}`;
     };
 
-    // Tombol Masuk Room
     btnEnterRoom.onclick = () => {
       const rawRoom = gatewayRoomInput.value.trim().toLowerCase();
       if (!rawRoom) {
@@ -330,7 +318,6 @@
       connectRoom(currentRoom);
     };
 
-    // Keluar / Ganti Room
     btnExitRoom.onclick = () => {
       if (confirm("Ingin keluar dan berganti room?")) {
         if (unsubscribe) unsubscribe();
@@ -355,7 +342,6 @@
       lucide.createIcons();
     }
 
-    // Toggle Role Cepat di Header
     document.getElementById('btnSwitchRole').onclick = () => {
       myRole = myRole === 'male' ? 'female' : 'male';
       localStorage.setItem('deeptalk_role', myRole);
@@ -386,6 +372,31 @@
       }
     }
 
+    // ==========================================
+    // GLOBAL TOUCH GESTURE (PANEL LEVEL)
+    // ==========================================
+    let panelStartX = 0;
+    let panelStartY = 0;
+
+    // 1. Swipe Left pada Deck Panel -> Pindah ke Form Pembuatan
+    deckPanel.addEventListener('touchstart', (e) => {
+      if (['TEXTAREA', 'INPUT'].includes(e.target.tagName) || isAnimating) return;
+      panelStartX = e.touches[0].clientX;
+      panelStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    deckPanel.addEventListener('touchend', (e) => {
+      if (['TEXTAREA', 'INPUT'].includes(e.target.tagName) || isAnimating) return;
+      const diffX = e.changedTouches[0].clientX - panelStartX;
+      const diffY = e.changedTouches[0].clientY - panelStartY;
+
+      // Jika geser ke kiri secara horizontal
+      if (diffX < -60 && Math.abs(diffY) < 80) {
+        setMode('create');
+      }
+    }, { passive: true });
+
+    // 2. Swipe Right pada Create Panel -> Kembali ke Deck
     const createPanel = document.getElementById('createPanel');
     let createStartX = 0;
     createPanel.addEventListener('touchstart', (e) => {
@@ -396,15 +407,16 @@
     createPanel.addEventListener('touchend', (e) => {
       if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) return;
       const diffX = e.changedTouches[0].clientX - createStartX;
-      if (diffX > 70) {
+      if (diffX > 60) {
         setMode('deck');
       }
-    });
+    }, { passive: true });
 
     document.getElementById('btnBackToDeck').onclick = () => setMode('deck');
+    document.getElementById('btnEmptyAdd').onclick = () => setMode('create');
 
     // ==========================================
-    // FIRESTORE SYNC & LOGIKA KARTU
+    // FIRESTORE SYNC
     // ==========================================
     function connectRoom(roomId) {
       if (unsubscribe) unsubscribe();
@@ -417,7 +429,7 @@
           questions = data.questions || [];
           answers = data.answers || {};
         } else {
-          // Data Awal jika room baru terbentuk
+          // Data Default Awal
           questions = [
             { id: 'q_1', category: 'Keuangan', createdBy: 'male', text: 'Bagaimana model pembagian pengeluaran bulanan yang kamu harapkan nanti?', hint: 'Transparansi gaji & tabungan' },
             { id: 'q_2', category: 'Keluarga', createdBy: 'female', text: 'Bagaimana rencanamu terkait tempat tinggal setelah menikah dan batas privasi dengan keluarga?', hint: 'Target mandiri / kontrak / rumah sendiri' },
@@ -443,6 +455,9 @@
       }
     }
 
+    // ==========================================
+    // RENDER DECK (ASYMMETRIC Q&A)
+    // ==========================================
     function renderDeck() {
       deckContainer.innerHTML = '';
 
@@ -475,9 +490,8 @@
         card.style.opacity = opacity;
 
         const qAns = answers[q.id] || { male: '', female: '' };
-        const myAnswer = qAns[myRole] || '';
-        const partnerAnswer = qAns[partnerRole] || '';
         const isFromMe = q.createdBy === myRole;
+        const answerText = isFromMe ? qAns[partnerRole] : qAns[myRole];
 
         card.innerHTML = `
           <!-- Header Kartu -->
@@ -489,7 +503,7 @@
                 </span>
               ` : `<span class="text-[10px] font-medium text-slate-400">Pertanyaan Bebas</span>`}
 
-              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isFromMe ? 'bg-slate-100 text-slate-600' : 'bg-rose-500/10 text-rose-600 border border-rose-200'}">
+              <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${isFromMe ? 'bg-slate-100 text-slate-700' : 'bg-rose-500/10 text-rose-600 border border-rose-200'}">
                 ${isFromMe ? 'Pertanyaanmu' : 'Pertanyaan dari Dia'}
               </span>
             </div>
@@ -497,7 +511,7 @@
           </div>
 
           <!-- Teks Pertanyaan -->
-          <div class="scrollable-content flex-1 my-2 pr-1 space-y-1">
+          <div class="scrollable-content flex-1 my-2 pr-1 space-y-1.5">
             <h2 class="text-base font-bold text-slate-800 leading-snug">${q.text}</h2>
             ${q.hint ? `
               <div class="flex items-start gap-1.5 text-xs text-slate-500 pt-0.5">
@@ -507,44 +521,54 @@
             ` : ''}
           </div>
 
-          <!-- Respons: Jawaban Kamu & Jawaban Dia -->
-          <div class="shrink-0 space-y-2.5 pt-2 border-t border-slate-100">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Jawaban Kamu</span>
-                ${myAnswer ? `
-                  <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                    <i data-lucide="check" class="w-3 h-3"></i> Terisi
-                  </span>
-                ` : '<span class="text-[10px] text-amber-500 font-medium">Belum diisi</span>'}
+          <!-- Bagian Jawaban Tunggal (Asimetris) -->
+          <div class="shrink-0 pt-3 border-t border-slate-100 space-y-2">
+            ${isFromMe ? `
+              <!-- JIKA PERTANYAANMU: HANYA MELIHAT JAWABAN DIA -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jawaban Dia</span>
+                  ${answerText ? `
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <i data-lucide="check-circle-2" class="w-3 h-3"></i> Dia sudah menjawab
+                    </span>
+                  ` : `
+                    <span class="text-[10px] text-slate-400 flex items-center gap-1">
+                      <i data-lucide="clock" class="w-3 h-3"></i> Menunggu respons...
+                    </span>
+                  `}
+                </div>
+                <div class="w-full p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-700 text-xs min-h-[70px] max-h-28 scrollable-content leading-relaxed select-text">
+                  ${answerText ? answerText : '<span class="text-slate-400 italic text-[11px]">Pasanganmu belum mengisi jawaban untuk pertanyaan ini.</span>'}
+                </div>
               </div>
-              <textarea data-role="${myRole}" data-qid="${q.id}" rows="2" placeholder="Tuliskan jawaban atau pandanganmu..." class="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-rose-400 focus:bg-white placeholder-slate-400 scrollable-content transition">${myAnswer}</textarea>
-            </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jawaban Dia</span>
-                ${partnerAnswer ? `
-                  <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                    <i data-lucide="check-circle-2" class="w-3 h-3"></i> Sudah menjawab
-                  </span>
-                ` : '<span class="text-[10px] text-slate-400">Menunggu respons...</span>'}
+            ` : `
+              <!-- JIKA PERTANYAAN DARI DIA: KAMU YANG MENGISI JAWABAN -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Jawaban Kamu</span>
+                  ${answerText ? `
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> Tersimpan
+                    </span>
+                  ` : `
+                    <span class="text-[10px] text-amber-500 font-medium">Wajib diisi</span>
+                  `}
+                </div>
+                <textarea data-role="${myRole}" data-qid="${q.id}" rows="3" placeholder="Tuliskan jawaban atau pandanganmu di sini..." class="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:outline-none focus:border-rose-400 focus:bg-white placeholder-slate-400 scrollable-content transition">${answerText || ''}</textarea>
               </div>
-              <div class="w-full p-2.5 text-xs bg-slate-100/70 border border-slate-200/70 rounded-xl text-slate-700 min-h-[44px] max-h-20 scrollable-content leading-relaxed select-text">
-                ${partnerAnswer ? partnerAnswer : '<span class="text-slate-400 italic text-[11px]">Belum ada jawaban dari dia.</span>'}
-              </div>
-            </div>
+            `}
           </div>
         `;
 
         deckContainer.appendChild(card);
 
         if (idx === 0) {
-          attachDeckGestures(card, q.id);
+          attachCardSwipeUp(card);
         }
       });
 
-      // Autosave listener
+      // Autosave listener untuk textarea aktif
       document.querySelectorAll('textarea[data-qid]').forEach(input => {
         input.oninput = (e) => {
           const qId = e.target.getAttribute('data-qid');
@@ -560,27 +584,33 @@
       lucide.createIcons();
     }
 
-    function attachDeckGestures(cardElement, qId) {
-      let startX = 0;
+    // ==========================================
+    // SWIPE UP GESTURE (KARTU TERATAS)
+    // ==========================================
+    function attachCardSwipeUp(cardElement) {
       let startY = 0;
-      let diffX = 0;
+      let startX = 0;
       let diffY = 0;
+      let diffX = 0;
       let isDragging = false;
 
       cardElement.addEventListener('touchstart', (e) => {
         if (['TEXTAREA', 'INPUT'].includes(e.target.tagName) || isAnimating) return;
-        startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
         isDragging = true;
         cardElement.classList.remove('card-transition');
       }, { passive: true });
 
       cardElement.addEventListener('touchmove', (e) => {
         if (!isDragging || isAnimating) return;
-        diffX = e.touches[0].clientX - startX;
         diffY = e.touches[0].clientY - startY;
+        diffX = e.touches[0].clientX - startX;
 
-        cardElement.style.transform = `translate(${diffX}px, ${diffY}px) rotate(${diffX * 0.04}deg)`;
+        // Hanya translasi vertikal jika pergerakan dominan ke atas
+        if (diffY < 0 && Math.abs(diffY) > Math.abs(diffX)) {
+          cardElement.style.transform = `translateY(${diffY}px) rotate(${diffX * 0.03}deg)`;
+        }
       }, { passive: true });
 
       cardElement.addEventListener('touchend', () => {
@@ -588,11 +618,9 @@
         isDragging = false;
         cardElement.classList.add('card-transition');
 
-        if (diffY < -80) {
+        // GESTURE: SWIPE UP -> Putar Kartu
+        if (diffY < -75 && Math.abs(diffY) > Math.abs(diffX)) {
           triggerCycleCardUp(cardElement);
-        } else if (diffX < -80) {
-          cardElement.style.transform = 'translate(0px, 0px)';
-          setMode('create');
         } else {
           cardElement.style.transform = 'translate(0px, 0px)';
         }
