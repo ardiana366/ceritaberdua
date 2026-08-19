@@ -83,7 +83,7 @@
           </div>
           <div class="relative">
             <i data-lucide="key" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-            <input id="gatewayRoomInput" type="text" placeholder="Contoh: ruang-kita" class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-mono text-xs focus:outline-none focus:border-rose-400 focus:bg-white transition uppercase tracking-wider font-semibold">
+            <input id="gatewayRoomInput" type="text" placeholder="Ketik kode room..." class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-mono text-xs focus:outline-none focus:border-rose-400 focus:bg-white transition uppercase tracking-wider font-semibold">
           </div>
           <p class="text-[10px] text-slate-400">Gunakan kode yang sama di HP pasanganmu.</p>
         </div>
@@ -113,7 +113,7 @@
 
       <button id="btnExitRoom" class="flex items-center gap-1.5 bg-white border border-rose-200/80 rounded-2xl px-2.5 py-1.5 text-xs shadow-sm hover:bg-rose-50 transition active:scale-95 text-rose-600" title="Keluar & Hapus Room">
         <i data-lucide="log-out" class="w-3 h-3 text-rose-500"></i>
-        <span id="currentRoomText" class="font-mono text-[11px] font-bold">RUANG-KITA</span>
+        <span id="currentRoomText" class="font-mono text-[11px] font-bold">---</span>
       </button>
     </div>
 
@@ -131,8 +131,8 @@
     <!-- PANEL A: MODE MENJAWAB / LOOPING DECK -->
     <div id="deckPanel" class="w-full shrink-0 h-full flex flex-col justify-center relative touch-pan-y">
       
-      <!-- Empty State -->
-      <div id="emptyDeck" class="hidden flex-col items-center justify-center text-center p-6 space-y-4 bg-white/80 border border-slate-200 rounded-3xl w-full h-[78dvh] shadow-sm">
+      <!-- Empty State (Saat room belum ada pertanyaan) -->
+      <div id="emptyDeck" class="flex flex-col items-center justify-center text-center p-6 space-y-4 bg-white/80 border border-slate-200 rounded-3xl w-full h-[78dvh] shadow-sm">
         <div class="p-4 bg-rose-50 text-rose-500 rounded-full shadow-inner">
           <i data-lucide="inbox" class="w-8 h-8"></i>
         </div>
@@ -140,9 +140,9 @@
           <h3 class="text-base font-bold text-slate-800">Belum Ada Pertanyaan</h3>
           <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan pertama bagi pasanganmu.</p>
         </div>
-        <button id="btnEmptyAdd" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-2xl font-semibold shadow-md shadow-rose-500/20 transition flex items-center gap-1.5 mx-auto">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          <span>Swipe Left / Klik Disini</span>
+        <button id="btnEmptyAdd" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-2xl font-semibold shadow-md shadow-rose-500/20 transition flex items-center gap-1.5 mx-auto active:scale-95">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Buat Pertanyaan Sekarang</span>
         </button>
       </div>
 
@@ -245,7 +245,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Palet Warna Berbeda Tiap Kartu (Apple Clean Soft Tint)
+    // Palet Warna Dinamis untuk Kartu
     const CARD_PALETTES = [
       { bg: 'bg-white', border: 'border-rose-200/90', tagBg: 'bg-rose-50', tagText: 'text-rose-600', tagBorder: 'border-rose-200', focusBorder: 'focus:border-rose-400', accent: 'text-rose-600' },
       { bg: 'bg-white', border: 'border-indigo-200/90', tagBg: 'bg-indigo-50', tagText: 'text-indigo-600', tagBorder: 'border-indigo-200', focusBorder: 'focus:border-indigo-400', accent: 'text-indigo-600' },
@@ -256,17 +256,12 @@
       { bg: 'bg-white', border: 'border-sky-200/90', tagBg: 'bg-sky-50', tagText: 'text-sky-600', tagBorder: 'border-sky-200', focusBorder: 'focus:border-sky-400', accent: 'text-sky-600' }
     ];
 
-    const DEFAULT_QUESTIONS = [
-      { id: 'q_1', category: 'Keuangan', createdBy: 'male', text: 'Bagaimana model pembagian pengeluaran bulanan yang kamu harapkan nanti?', hint: 'Transparansi gaji & tabungan' },
-      { id: 'q_2', category: 'Keluarga', createdBy: 'female', text: 'Bagaimana rencanamu terkait tempat tinggal setelah menikah dan batas privasi dengan keluarga?', hint: 'Target mandiri / kontrak / rumah sendiri' },
-      { id: 'q_3', category: 'Masa Lalu', createdBy: 'male', text: 'Bagaimana batasan relasi yang kamu anggap sehat terkait rekan lawan jenis di luar sana?', hint: 'Komunikasi & batasan medsos' }
-    ];
-
     let currentRoom = localStorage.getItem('deeptalk_room') || '';
     let myRole = localStorage.getItem('deeptalk_role') || 'male';
     let tempGatewayRole = myRole;
 
-    let questions = [...DEFAULT_QUESTIONS];
+    // Tidak ada pertanyaan default saat room baru
+    let questions = [];
     let answers = {};
     let currentMode = 'deck';
     let unsubscribe = null;
@@ -328,12 +323,16 @@
       localStorage.setItem('deeptalk_room', currentRoom);
       localStorage.setItem('deeptalk_role', myRole);
 
-      roomGatewayScreen.classList.add('hidden');
-      updateRoleUI();
+      // Update state & UI langsung secara instan
       currentRoomText.innerText = currentRoom.toUpperCase();
+      updateRoleUI();
+      roomGatewayScreen.classList.add('hidden');
 
-      // Render awal secara instan mencegah blank screen
+      questions = [];
+      answers = {};
       renderDeck();
+
+      // Hubungkan ke room Firestore yang baru dipilih
       connectRoom(currentRoom);
     };
 
@@ -347,27 +346,24 @@
         try {
           if (unsubscribe) unsubscribe();
 
-          // Hapus dokumen di Firestore secara permanen
           if (currentRoom) {
             const docRef = doc(db, 'deeptalk_deck', currentRoom);
             await deleteDoc(docRef);
           }
 
-          // Bersihkan local storage
           localStorage.removeItem('deeptalk_room');
           localStorage.removeItem('deeptalk_role');
 
           currentRoom = '';
-          questions = [...DEFAULT_QUESTIONS];
+          questions = [];
           answers = {};
 
-          // Tampilkan kembali gateway
+          currentRoomText.innerText = '---';
           roomGatewayScreen.classList.remove('hidden');
           gatewayRoomInput.value = '';
           updateGatewayRoleButtons();
         } catch (err) {
           console.error("Gagal menghapus data room:", err);
-          alert("Gagal menghapus data dari server, tetapi sesi lokal ditutup.");
           roomGatewayScreen.classList.remove('hidden');
         }
       }
@@ -468,10 +464,11 @@
       unsubscribe = onSnapshot(docRef, (snap) => {
         if (snap.exists()) {
           const data = snap.data();
-          questions = data.questions && data.questions.length > 0 ? data.questions : [...DEFAULT_QUESTIONS];
+          questions = Array.isArray(data.questions) ? data.questions : [];
           answers = data.answers || {};
         } else {
-          questions = [...DEFAULT_QUESTIONS];
+          // Room baru: kosongkan data
+          questions = [];
           answers = {};
           saveDeck();
         }
@@ -497,7 +494,7 @@
     }
 
     // ==========================================
-    // RENDER DECK DENGAN PALET WARNA BERBEDA
+    // RENDER DECK DENGAN WARNA BERBEDA
     // ==========================================
     function renderDeck() {
       deckContainer.innerHTML = '';
@@ -519,7 +516,6 @@
         const card = document.createElement('div');
         card.id = `card_${q.id}`;
         
-        // Pilih palet warna konsisten berdasarkan index/ID
         const colorIndex = (Math.abs(q.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) + idx) % CARD_PALETTES.length;
         const palette = CARD_PALETTES[colorIndex];
 
