@@ -43,29 +43,100 @@
 </head>
 <body class="bg-slate-100 text-slate-800 flex flex-col justify-between p-4 pb-6 h-full relative overflow-hidden">
 
-  <!-- 1. Top Bar / Status -->
+  <!-- ======================================================== -->
+  <!-- 0. SCREEN AWAL: BUAT / JOIN ROOM (GATEWAY)               -->
+  <!-- ======================================================== -->
+  <div id="roomGatewayScreen" class="fixed inset-0 z-50 bg-slate-100 flex flex-col justify-between p-5 max-w-sm mx-auto h-full scrollable-content">
+    <div class="my-auto space-y-6">
+      
+      <!-- Brand & Welcome -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-3xl border border-rose-100 shadow-sm">
+          <i data-lucide="layers" class="w-8 h-8"></i>
+        </div>
+        <h1 class="text-2xl font-black tracking-tight text-slate-900">Deep Talk Deck</h1>
+        <p class="text-xs text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+          Tanya jawab terstruktur dan jujur bersama calon pasangan.
+        </p>
+      </div>
+
+      <!-- Main Gateway Card -->
+      <div class="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-xl space-y-4">
+        
+        <!-- Pilihan Peran -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-2">Pilih Peranmu</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="btnGatewayMale" type="button" class="py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>Pria</span>
+            </button>
+            <button id="btnGatewayFemale" type="button" class="py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95">
+              <i data-lucide="user-check" class="w-4 h-4"></i>
+              <span>Wanita</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Kode Room -->
+        <div class="space-y-1.5 pt-1">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-700">Nama / Kode Room</label>
+            <button id="btnGenRoom" type="button" class="text-[10px] text-rose-600 font-semibold hover:underline flex items-center gap-1">
+              <i data-lucide="shuffle" class="w-3 h-3"></i> Acak Kode
+            </button>
+          </div>
+          <div class="relative">
+            <i data-lucide="key" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="gatewayRoomInput" type="text" placeholder="Contoh: ruang-kita" class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-mono text-xs focus:outline-none focus:border-rose-400 focus:bg-white transition uppercase tracking-wider font-semibold">
+          </div>
+          <p class="text-[10px] text-slate-400">Gunakan kode yang sama di HP pasanganmu.</p>
+        </div>
+
+        <!-- Tombol Masuk / Join -->
+        <button id="btnEnterRoom" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+          <span>Mulai Diskusi</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer Gateway -->
+    <div class="text-center py-2 shrink-0">
+      <p class="text-[11px] text-slate-400">Sinkronisasi Realtime via Cloud</p>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 1. HEADER UTAMA (APP SCREEN)                             -->
+  <!-- ======================================================== -->
   <header class="flex items-center justify-between z-20 shrink-0">
     <div class="flex items-center gap-2">
+      <!-- Role Badge -->
       <button id="btnSwitchRole" class="px-2.5 py-1.5 rounded-2xl border shadow-sm flex items-center gap-1.5 transition active:scale-95 bg-white border-slate-200">
-        <i id="roleBadgeIcon" data-lucide="user" class="w-3.5 h-3.5 text-rose-500"></i>
+        <i id="roleBadgeIcon" data-lucide="user" class="w-3.5 h-3.5 text-slate-700"></i>
         <span id="roleBadgeText" class="text-xs font-bold text-slate-800">Pria</span>
       </button>
 
-      <div class="flex items-center gap-1 bg-white border border-slate-200/80 rounded-2xl px-2.5 py-1.5 text-xs shadow-sm">
+      <!-- Room Session Badge & Change Room -->
+      <button id="btnExitRoom" class="flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-2xl px-2.5 py-1.5 text-xs shadow-sm hover:border-rose-200 transition active:scale-95" title="Ganti Room">
         <i data-lucide="key" class="w-3 h-3 text-rose-500"></i>
-        <input id="roomInput" type="text" value="ruang-kita" class="bg-transparent text-slate-800 w-16 focus:outline-none font-mono text-[11px] font-semibold">
-        <button id="btnSetRoom" class="text-[10px] text-rose-600 font-bold active:opacity-60">Ubah</button>
-      </div>
+        <span id="currentRoomText" class="font-mono text-[11px] font-bold text-slate-700">RUANG-KITA</span>
+        <i data-lucide="log-out" class="w-3 h-3 text-slate-400 ml-0.5"></i>
+      </button>
     </div>
 
-    <!-- Tombol Cara Bermain di Atas -->
+    <!-- Tombol Cara Bermain -->
     <button id="btnOpenHint" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 rounded-2xl text-slate-700 hover:text-slate-900 shadow-sm active:scale-95 transition text-xs font-semibold">
       <i data-lucide="help-circle" class="w-3.5 h-3.5 text-rose-500"></i>
       <span>Cara Bermain</span>
     </button>
   </header>
 
-  <!-- 2. Dual-Panel Viewport Slider -->
+  <!-- ======================================================== -->
+  <!-- 2. DUAL-PANEL VIEWPORT SLIDER (MAIN APP)                 -->
+  <!-- ======================================================== -->
   <main id="mainSlider" class="relative flex-1 w-full max-w-sm mx-auto my-auto flex card-transition" style="transform: translateX(0%);">
     
     <!-- PANEL A: MODE MENJAWAB / LOOPING DECK -->
@@ -120,7 +191,7 @@
 
           <div>
             <label class="block font-semibold text-slate-500 mb-1">Catatan / Petunjuk Konteks (Opsional)</label>
-            <input id="inputHint" type="text" placeholder="Misal: Tolong jawab dengan terbuka dan objektif" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-600 focus:outline-none focus:border-rose-400 focus:bg-white transition">
+            <input id="inputHint" type="text" placeholder="Misal: Tolong jawab dengan terbuka dan jujur" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-600 focus:outline-none focus:border-rose-400 focus:bg-white transition">
           </div>
         </div>
 
@@ -132,36 +203,9 @@
     </div>
   </main>
 
-  <!-- 3. Modal Pemilihan Peran (Role Selector) -->
-  <div id="roleModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md hidden flex-col items-center justify-center p-5">
-    <div class="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-xs space-y-5 shadow-2xl text-center">
-      <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 shadow-inner">
-        <i data-lucide="users" class="w-7 h-7"></i>
-      </div>
-      <div>
-        <h3 class="text-base font-bold text-slate-900">Pilih Peranmu</h3>
-        <p class="text-xs text-slate-500 mt-1">Pilih identitas untuk memisahkan giliran bertanya dan menjawab.</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 pt-1">
-        <button id="btnSelectMale" class="p-4 border-2 border-slate-100 hover:border-rose-400 bg-slate-50 hover:bg-rose-50/50 rounded-2xl flex flex-col items-center gap-2.5 transition active:scale-95">
-          <div class="p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 shadow-sm">
-            <i data-lucide="user" class="w-6 h-6"></i>
-          </div>
-          <span class="text-xs font-bold text-slate-800">Saya Pria</span>
-        </button>
-
-        <button id="btnSelectFemale" class="p-4 border-2 border-slate-100 hover:border-rose-400 bg-slate-50 hover:bg-rose-50/50 rounded-2xl flex flex-col items-center gap-2.5 transition active:scale-95">
-          <div class="p-2.5 bg-white rounded-xl border border-slate-200 text-rose-500 shadow-sm">
-            <i data-lucide="user-check" class="w-6 h-6"></i>
-          </div>
-          <span class="text-xs font-bold text-slate-800">Saya Wanita</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4. Onboarding Hint Modal (Cara Bermain) -->
+  <!-- ======================================================== -->
+  <!-- 3. MODAL CARA BERMAIN                                    -->
+  <!-- ======================================================== -->
   <div id="hintModal" class="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-md hidden flex-col items-center justify-center p-5">
     <div class="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-xs space-y-5 shadow-2xl text-center">
       <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 shadow-inner">
@@ -170,13 +214,13 @@
       
       <div>
         <h3 class="text-base font-bold text-slate-900">Cara Bermain</h3>
-        <p class="text-xs text-slate-500 mt-1">Interaksi kartu berbasis sentuhan sentuh & gestur:</p>
+        <p class="text-xs text-slate-500 mt-1">Interaksi kartu berbasis gestur layar sentuh:</p>
       </div>
 
       <div class="space-y-3 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
         <div class="flex items-center gap-3">
           <span class="p-2 bg-rose-100 text-rose-600 rounded-xl shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Up:</strong> Lanjut ke pertanyaan berikutnya. Kartu berputar ke antrean belakang untuk direview lagi nanti.</p>
+          <p><strong class="text-slate-800">Swipe Up:</strong> Lanjut ke pertanyaan berikutnya. Kartu berputar ke antrean belakang.</p>
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0"><i data-lucide="arrow-left" class="w-4 h-4"></i></span>
@@ -184,7 +228,7 @@
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0"><i data-lucide="arrow-right" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari form pembuatan pertanyaan ke mode tumpukan kartu.</p>
+          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari form pembuatan pertanyaan ke kartu.</p>
         </div>
       </div>
 
@@ -212,8 +256,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let currentRoom = 'ruang-kita';
+    // State Aplikasi
+    let currentRoom = localStorage.getItem('deeptalk_room') || '';
     let myRole = localStorage.getItem('deeptalk_role') || 'male';
+    let tempGatewayRole = myRole;
+
     let questions = [];
     let answers = {};
     let currentMode = 'deck';
@@ -221,15 +268,77 @@
     let isAnimating = false;
 
     // DOM Elements
+    const roomGatewayScreen = document.getElementById('roomGatewayScreen');
+    const gatewayRoomInput = document.getElementById('gatewayRoomInput');
+    const btnGatewayMale = document.getElementById('btnGatewayMale');
+    const btnGatewayFemale = document.getElementById('btnGatewayFemale');
+    const btnEnterRoom = document.getElementById('btnEnterRoom');
+    const btnGenRoom = document.getElementById('btnGenRoom');
+    const btnExitRoom = document.getElementById('btnExitRoom');
+    const currentRoomText = document.getElementById('currentRoomText');
+
     const slider = document.getElementById('mainSlider');
     const deckContainer = document.getElementById('deckContainer');
     const emptyDeck = document.getElementById('emptyDeck');
     const hintModal = document.getElementById('hintModal');
-    const roleModal = document.getElementById('roleModal');
     const roleBadgeText = document.getElementById('roleBadgeText');
+    const roleBadgeIcon = document.getElementById('roleBadgeIcon');
     const targetQuestionLabel = document.getElementById('targetQuestionLabel');
 
-    // Inisialisasi Role UI
+    // ==========================================
+    // LOGIKA GATEWAY & ROOM SETUP
+    // ==========================================
+    function updateGatewayRoleButtons() {
+      if (tempGatewayRole === 'male') {
+        btnGatewayMale.className = "py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
+        btnGatewayFemale.className = "py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
+      } else {
+        btnGatewayMale.className = "py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
+        btnGatewayFemale.className = "py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
+      }
+      lucide.createIcons();
+    }
+
+    btnGatewayMale.onclick = () => { tempGatewayRole = 'male'; updateGatewayRoleButtons(); };
+    btnGatewayFemale.onclick = () => { tempGatewayRole = 'female'; updateGatewayRoleButtons(); };
+
+    // Acak kode room
+    btnGenRoom.onclick = () => {
+      const words = ['KITA', 'DEEPTALK', 'CERITA', 'RASA', 'IMPIAN', 'VISI'];
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      const randomNum = Math.floor(100 + Math.random() * 900);
+      gatewayRoomInput.value = `${randomWord}-${randomNum}`;
+    };
+
+    // Tombol Masuk Room
+    btnEnterRoom.onclick = () => {
+      const rawRoom = gatewayRoomInput.value.trim().toLowerCase();
+      if (!rawRoom) {
+        alert("Silakan masukkan atau buat nama room terlebih dahulu!");
+        return;
+      }
+
+      currentRoom = rawRoom;
+      myRole = tempGatewayRole;
+
+      localStorage.setItem('deeptalk_room', currentRoom);
+      localStorage.setItem('deeptalk_role', myRole);
+
+      roomGatewayScreen.classList.add('hidden');
+      updateRoleUI();
+      currentRoomText.innerText = currentRoom.toUpperCase();
+      connectRoom(currentRoom);
+    };
+
+    // Keluar / Ganti Room
+    btnExitRoom.onclick = () => {
+      if (confirm("Ingin keluar dan berganti room?")) {
+        if (unsubscribe) unsubscribe();
+        roomGatewayScreen.classList.remove('hidden');
+        gatewayRoomInput.value = currentRoom;
+      }
+    };
+
     function updateRoleUI() {
       const iconContainer = document.getElementById('roleBadgeIcon');
       if (myRole === 'male') {
@@ -245,43 +354,18 @@
       }
       lucide.createIcons();
     }
-    updateRoleUI();
 
-    // Check Role First Time
-    if (!localStorage.getItem('deeptalk_role')) {
-      roleModal.classList.remove('hidden');
-      roleModal.classList.add('flex');
-    }
-
-    document.getElementById('btnSelectMale').onclick = () => {
-      myRole = 'male';
-      localStorage.setItem('deeptalk_role', 'male');
-      updateRoleUI();
-      roleModal.classList.add('hidden');
-      roleModal.classList.remove('flex');
-      renderDeck();
-    };
-
-    document.getElementById('btnSelectFemale').onclick = () => {
-      myRole = 'female';
-      localStorage.setItem('deeptalk_role', 'female');
-      updateRoleUI();
-      roleModal.classList.add('hidden');
-      roleModal.classList.remove('flex');
-      renderDeck();
-    };
-
+    // Toggle Role Cepat di Header
     document.getElementById('btnSwitchRole').onclick = () => {
-      roleModal.classList.remove('hidden');
-      roleModal.classList.add('flex');
+      myRole = myRole === 'male' ? 'female' : 'male';
+      localStorage.setItem('deeptalk_role', myRole);
+      updateRoleUI();
+      renderDeck();
     };
 
-    // Hint Onboarding Logic
-    if (!localStorage.getItem('deeptalk_hint_seen')) {
-      hintModal.classList.remove('hidden');
-      hintModal.classList.add('flex');
-    }
-
+    // ==========================================
+    // ONBOARDING & NAVIGATION
+    // ==========================================
     document.getElementById('btnCloseHint').onclick = () => {
       localStorage.setItem('deeptalk_hint_seen', 'true');
       hintModal.classList.add('hidden');
@@ -293,7 +377,6 @@
       hintModal.classList.add('flex');
     };
 
-    // Navigasi Mode (Deck vs Create)
     function setMode(mode) {
       currentMode = mode;
       if (mode === 'create') {
@@ -303,7 +386,6 @@
       }
     }
 
-    // Swipe Right pada Panel Form untuk kembali ke deck
     const createPanel = document.getElementById('createPanel');
     let createStartX = 0;
     createPanel.addEventListener('touchstart', (e) => {
@@ -321,7 +403,9 @@
 
     document.getElementById('btnBackToDeck').onclick = () => setMode('deck');
 
-    // Firestore Sync
+    // ==========================================
+    // FIRESTORE SYNC & LOGIKA KARTU
+    // ==========================================
     function connectRoom(roomId) {
       if (unsubscribe) unsubscribe();
       currentRoom = roomId;
@@ -333,7 +417,7 @@
           questions = data.questions || [];
           answers = data.answers || {};
         } else {
-          // Data Default
+          // Data Awal jika room baru terbentuk
           questions = [
             { id: 'q_1', category: 'Keuangan', createdBy: 'male', text: 'Bagaimana model pembagian pengeluaran bulanan yang kamu harapkan nanti?', hint: 'Transparansi gaji & tabungan' },
             { id: 'q_2', category: 'Keluarga', createdBy: 'female', text: 'Bagaimana rencanamu terkait tempat tinggal setelah menikah dan batas privasi dengan keluarga?', hint: 'Target mandiri / kontrak / rumah sendiri' },
@@ -359,7 +443,6 @@
       }
     }
 
-    // Render Deck Berdasarkan Role Pengguna
     function renderDeck() {
       deckContainer.innerHTML = '';
 
@@ -426,7 +509,6 @@
 
           <!-- Respons: Jawaban Kamu & Jawaban Dia -->
           <div class="shrink-0 space-y-2.5 pt-2 border-t border-slate-100">
-            <!-- 1. Jawaban Kamu -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Jawaban Kamu</span>
@@ -439,7 +521,6 @@
               <textarea data-role="${myRole}" data-qid="${q.id}" rows="2" placeholder="Tuliskan jawaban atau pandanganmu..." class="w-full p-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-rose-400 focus:bg-white placeholder-slate-400 scrollable-content transition">${myAnswer}</textarea>
             </div>
 
-            <!-- 2. Jawaban Dia -->
             <div>
               <div class="flex items-center justify-between mb-1">
                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jawaban Dia</span>
@@ -479,7 +560,6 @@
       lucide.createIcons();
     }
 
-    // Touch Handling (Swipe Up & Left)
     function attachDeckGestures(cardElement, qId) {
       let startX = 0;
       let startY = 0;
@@ -508,23 +588,17 @@
         isDragging = false;
         cardElement.classList.add('card-transition');
 
-        // GESTURE 1: SWIPE UP -> Putar Kartu ke Belakang
         if (diffY < -80) {
           triggerCycleCardUp(cardElement);
-        } 
-        // GESTURE 2: SWIPE LEFT -> Buka Form Buat Pertanyaan
-        else if (diffX < -80) {
+        } else if (diffX < -80) {
           cardElement.style.transform = 'translate(0px, 0px)';
           setMode('create');
-        } 
-        // RESET
-        else {
+        } else {
           cardElement.style.transform = 'translate(0px, 0px)';
         }
       });
     }
 
-    // Siklus Looping
     function triggerCycleCardUp(cardElement) {
       if (isAnimating || questions.length === 0) return;
       isAnimating = true;
@@ -571,14 +645,18 @@
       setMode('deck');
     };
 
-    // Ubah Room
-    document.getElementById('btnSetRoom').onclick = () => {
-      const val = document.getElementById('roomInput').value.trim();
-      if (val) connectRoom(val);
-    };
-
-    // Start App
-    connectRoom(currentRoom);
+    // ==========================================
+    // INITIALIZATION RUNNER
+    // ==========================================
+    if (currentRoom) {
+      roomGatewayScreen.classList.add('hidden');
+      updateRoleUI();
+      currentRoomText.innerText = currentRoom.toUpperCase();
+      connectRoom(currentRoom);
+    } else {
+      roomGatewayScreen.classList.remove('hidden');
+      updateGatewayRoleButtons();
+    }
   </script>
 </body>
 </html>
