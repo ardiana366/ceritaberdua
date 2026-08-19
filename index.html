@@ -51,7 +51,7 @@
       <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-full px-3 py-1 text-xs">
         <i data-lucide="key" class="w-3.5 h-3.5 text-rose-400"></i>
         <input id="roomInput" type="text" value="ruang-kita" class="bg-transparent text-slate-200 w-16 focus:outline-none font-mono text-[11px]">
-        <button id="btnSetRoom" class="text-[10px] text-rose-400 font-semibold">Ubah</button>
+        <button id="btnSetRoom" class="text-[10px] text-rose-400 font-semibold active:opacity-60">Ubah</button>
       </div>
     </div>
   </header>
@@ -71,7 +71,7 @@
           <h3 class="text-base font-semibold text-slate-200">Semua Kartu Terjawab!</h3>
           <p class="text-xs text-slate-400 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan baru.</p>
         </div>
-        <button id="btnEmptyAdd" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full font-medium shadow-lg transition">
+        <button id="btnEmptyAdd" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full font-medium shadow-lg transition active:scale-95">
           Buat Pertanyaan &larr;
         </button>
       </div>
@@ -88,7 +88,7 @@
             <i data-lucide="plus-circle" class="w-5 h-5 text-rose-400"></i>
             <h2 class="text-sm font-bold text-slate-100">Buat Pertanyaan Baru</h2>
           </div>
-          <button id="btnBackToDeck" class="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white">
+          <button id="btnBackToDeck" class="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white active:scale-95">
             <span>Kembali</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </button>
@@ -101,7 +101,7 @@
           </div>
 
           <div>
-            <label class="block font-medium text-slate-300 mb-1">Pertanyaan</label>
+            <label class="block font-medium text-slate-300 mb-1">Pertanyaan <span class="text-rose-400">*</span></label>
             <textarea id="inputText" rows="4" placeholder="Tuliskan hal serius atau mendalam yang ingin kamu tanyakan ke pasangan..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 focus:outline-none focus:border-rose-500 scrollable-content"></textarea>
           </div>
 
@@ -131,7 +131,7 @@
     </button>
   </footer>
 
-  <!-- 4. Onboarding Hint Modal (Panduan Pertama Kali) -->
+  <!-- 4. Onboarding Hint Modal -->
   <div id="hintModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex-col items-center justify-center p-5">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-xs space-y-5 shadow-2xl text-center">
       <div class="inline-flex p-3 bg-rose-500/10 text-rose-400 rounded-2xl border border-rose-500/20">
@@ -166,10 +166,10 @@
 
   <!-- Firebase Modular SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // GANTI DENGAN CONFIG FIREBASE ANDA
+    // Konfigurasi Firebase Aktif
     const firebaseConfig = {
       apiKey: "AIzaSyC5qI-YCwJK9Xj5Fci7vIArFMetj1ZP2_w",
       authDomain: "ceritaberdua-9f71d.firebaseapp.com",
@@ -181,12 +181,12 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
 
     let currentRoom = 'ruang-kita';
     let questions = [];
     let answers = {};
-    let currentMode = 'deck'; // 'deck' | 'create'
+    let currentMode = 'deck';
     let unsubscribe = null;
 
     // DOM Elements
@@ -196,7 +196,7 @@
     const deckCounter = document.getElementById('deckCounter');
     const hintModal = document.getElementById('hintModal');
 
-    // Hint Onboarding Logic (Muncul otomatis pertama kali)
+    // Onboarding Hint Logic
     if (!localStorage.getItem('deeptalk_hint_seen')) {
       hintModal.classList.remove('hidden');
       hintModal.classList.add('flex');
@@ -223,7 +223,7 @@
       }
     }
 
-    // Attach Swipe Right pada Create Panel agar bisa kembali ke deck
+    // Swipe Right pada Panel Buat Pertanyaan
     const createPanel = document.getElementById('createPanel');
     let createStartX = 0;
     createPanel.addEventListener('touchstart', (e) => {
@@ -234,8 +234,8 @@
     createPanel.addEventListener('touchend', (e) => {
       if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) return;
       const diffX = e.changedTouches[0].clientX - createStartX;
-      if (diffX > 80) {
-        setMode('deck'); // Swipe Right -> Kembali ke mode kartu
+      if (diffX > 70) {
+        setMode('deck');
       }
     });
 
@@ -251,7 +251,7 @@
           questions = data.questions || [];
           answers = data.answers || {};
         } else {
-          // Default data
+          // Inisialisasi awal jika room baru
           questions = [
             { id: 'q_1', category: 'Keuangan', text: 'Bagaimana pembagian pengeluaran bulanan nanti (gabung total atau proporsional)?', hint: 'Transparansi gaji & tabungan', isDone: false },
             { id: 'q_2', category: 'Keluarga', text: 'Rencana tempat tinggal setelah menikah? Kapan target mandiri?', isDone: false },
@@ -261,16 +261,22 @@
           saveDeck();
         }
         renderDeck();
+      }, (error) => {
+        console.error("Firestore error:", error);
       });
     }
 
     async function saveDeck() {
-      const docRef = doc(db, 'deeptalk_deck', currentRoom);
-      await setDoc(docRef, {
-        questions,
-        answers,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
+      try {
+        const docRef = doc(db, 'deeptalk_deck', currentRoom);
+        await setDoc(docRef, {
+          questions,
+          answers,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Gagal menyimpan data:", err);
+      }
     }
 
     // Render Stacking Deck
@@ -289,7 +295,6 @@
       emptyDeck.classList.add('hidden');
       emptyDeck.classList.remove('flex');
 
-      // Tampilkan 3 kartu teratas
       const visible = pending.slice(0, 3);
 
       visible.forEach((q, idx) => {
@@ -355,7 +360,7 @@
       lucide.createIcons();
     }
 
-    // Touch Handling untuk Deck (Swipe Up & Swipe Left)
+    // Touch Swipe Gesture Card
     function attachDeckGestures(cardElement, qId) {
       let startX = 0;
       let startY = 0;
@@ -384,16 +389,16 @@
         isDragging = false;
         cardElement.classList.add('smooth-transition');
 
-        // GESTURE 1: SWIPE UP -> Selesai
-        if (diffY < -90) {
+        // GESTURE: SWIPE UP
+        if (diffY < -80) {
           cardElement.style.transform = 'translateY(-120vh) rotate(-10deg)';
           cardElement.style.opacity = '0';
           const target = questions.find(q => q.id === qId);
           if (target) target.isDone = true;
           saveDeck();
         } 
-        // GESTURE 2: SWIPE LEFT -> Masuk ke Mode Buat Pertanyaan
-        else if (diffX < -90) {
+        // GESTURE: SWIPE LEFT
+        else if (diffX < -80) {
           cardElement.style.transform = 'translate(0px, 0px)';
           setMode('create');
         } 
@@ -404,7 +409,7 @@
       });
     }
 
-    // Event Buttons
+    // Event Bindings
     document.getElementById('btnTriggerNew').onclick = () => setMode('create');
     document.getElementById('btnEmptyAdd').onclick = () => setMode('create');
     document.getElementById('btnBackToDeck').onclick = () => setMode('deck');
@@ -420,23 +425,28 @@
       }
     };
 
+    // Tombol Masukkan ke Tumpukan Kartu
     document.getElementById('btnSubmitQuestion').onclick = async () => {
       const category = document.getElementById('inputCategory').value.trim();
       const text = document.getElementById('inputText').value.trim();
       const hint = document.getElementById('inputHint').value.trim();
 
-      if (!text) return;
+      if (!text) {
+        alert("Pertanyaan wajib diisi!");
+        return;
+      }
 
-      questions.unshift({
+      const newQ = {
         id: 'q_' + Date.now(),
         category: category || null,
         text,
         hint: hint || null,
         isDone: false
-      });
+      };
 
+      questions.unshift(newQ);
       await saveDeck();
-      
+
       // Reset form & kembali ke kartu
       document.getElementById('inputCategory').value = '';
       document.getElementById('inputText').value = '';
@@ -444,12 +454,15 @@
       setMode('deck');
     };
 
+    // Tombol Ubah Room
     document.getElementById('btnSetRoom').onclick = () => {
       const val = document.getElementById('roomInput').value.trim();
-      if (val) connectRoom(val);
+      if (val) {
+        connectRoom(val);
+      }
     };
 
-    // Init
+    // Init App
     connectRoom(currentRoom);
   </script>
 </body>
