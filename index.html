@@ -30,7 +30,6 @@
     .card-transition {
       transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, box-shadow 0.35s ease;
     }
-    /* Bayangan bertingkat ala iOS */
     .card-shadow-1 {
       box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.12), 0 8px 16px -6px rgba(15, 23, 42, 0.06);
     }
@@ -71,10 +70,10 @@
     </div>
   </header>
 
-  <!-- 2. Dual-Panel Viewport Slider (Menjawab vs Buat Pertanyaan) -->
+  <!-- 2. Dual-Panel Viewport Slider -->
   <main id="mainSlider" class="relative flex-1 w-full max-w-sm mx-auto my-2 flex card-transition" style="transform: translateX(0%);">
     
-    <!-- PANEL A: MODE MENJAWAB (STACKING DECK) -->
+    <!-- PANEL A: MODE MENJAWAB / LOOPING DECK -->
     <div id="deckPanel" class="w-full shrink-0 h-full flex flex-col justify-center relative">
       
       <!-- Empty State -->
@@ -83,8 +82,8 @@
           <i data-lucide="sparkles" class="w-8 h-8"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Semua Kartu Terjawab!</h3>
-          <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan baru bersama pasangan.</p>
+          <h3 class="text-base font-bold text-slate-800">Belum Ada Pertanyaan</h3>
+          <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan pertama bersama pasangan.</p>
         </div>
         <button id="btnEmptyAdd" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-full font-semibold shadow-md shadow-rose-500/25 transition active:scale-95">
           Buat Pertanyaan Baru &larr;
@@ -95,7 +94,7 @@
       <div id="deckContainer" class="deck-perspective relative w-full h-[70dvh]"></div>
     </div>
 
-    <!-- PANEL B: MODE BUAT PERTANYAAN (SWIPE LEFT TARGET) -->
+    <!-- PANEL B: MODE BUAT PERTANYAAN -->
     <div id="createPanel" class="w-full shrink-0 h-full flex flex-col justify-center pl-4">
       <div class="bg-white border border-slate-200 rounded-3xl p-5 w-full h-[70dvh] flex flex-col justify-between shadow-xl">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
@@ -140,8 +139,8 @@
       <span>Buat Kartu</span>
     </button>
     
-    <button id="btnTriggerDone" class="flex flex-1 items-center justify-center gap-1.5 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 active:scale-95 transition">
-      <span>Swipe Up (Selesai)</span>
+    <button id="btnTriggerNext" class="flex flex-1 items-center justify-center gap-1.5 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 active:scale-95 transition">
+      <span>Kartu Berikutnya (Swipe Up)</span>
       <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
     </button>
   </footer>
@@ -154,14 +153,14 @@
       </div>
       
       <div>
-        <h3 class="text-base font-bold text-slate-900">Petunjuk Gesture Kartu</h3>
-        <p class="text-xs text-slate-500 mt-1">Interaksi kartu dirancang geser layar sentuh:</p>
+        <h3 class="text-base font-bold text-slate-900">Sistem Kartu Berputar</h3>
+        <p class="text-xs text-slate-500 mt-1">Kartu tidak akan hilang, melainkan berputar ke antrean belakang:</p>
       </div>
 
       <div class="space-y-3 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
         <div class="flex items-center gap-3">
           <span class="p-2 bg-rose-100 text-rose-600 rounded-xl shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Up:</strong> Menyelesaikan kartu dan memunculkan kartu berikutnya.</p>
+          <p><strong class="text-slate-800">Swipe Up:</strong> Lanjut ke pertanyaan berikutnya. Kartu akan kembali lagi nanti untuk direview.</p>
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0"><i data-lucide="arrow-left" class="w-4 h-4"></i></span>
@@ -169,7 +168,7 @@
         </div>
         <div class="flex items-center gap-3">
           <span class="p-2 bg-emerald-100 text-emerald-700 rounded-xl shrink-0"><i data-lucide="arrow-right" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari form pembuatan ke mode tumpukan.</p>
+          <p><strong class="text-slate-800">Swipe Right:</strong> Kembali dari form pembuatan ke mode kartu.</p>
         </div>
       </div>
 
@@ -184,7 +183,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // Konfigurasi Firebase Anda
     const firebaseConfig = {
       apiKey: "AIzaSyC5qI-YCwJK9Xj5Fci7vIArFMetj1ZP2_w",
       authDomain: "ceritaberdua-9f71d.firebaseapp.com",
@@ -203,6 +201,7 @@
     let answers = {};
     let currentMode = 'deck';
     let unsubscribe = null;
+    let isAnimating = false;
 
     // DOM Elements
     const slider = document.getElementById('mainSlider');
@@ -228,7 +227,7 @@
       hintModal.classList.add('flex');
     };
 
-    // Navigasi Mode Tampilan (Deck vs Create)
+    // Navigasi Mode (Deck vs Create)
     function setMode(mode) {
       currentMode = mode;
       if (mode === 'create') {
@@ -238,7 +237,7 @@
       }
     }
 
-    // Gesture Swipe Right pada Panel Buat Pertanyaan untuk kembali
+    // Gesture Swipe Right pada Form Buat Pertanyaan
     const createPanel = document.getElementById('createPanel');
     let createStartX = 0;
     createPanel.addEventListener('touchstart', (e) => {
@@ -254,7 +253,7 @@
       }
     });
 
-    // Sinkronisasi Firestore Realtime
+    // Firestore Sync
     function connectRoom(roomId) {
       if (unsubscribe) unsubscribe();
       currentRoom = roomId;
@@ -266,11 +265,10 @@
           questions = data.questions || [];
           answers = data.answers || {};
         } else {
-          // Data inisialisasi jika room masih baru
           questions = [
-            { id: 'q_1', category: 'Keuangan', text: 'Bagaimana model pembagian pengeluaran bulanan kita nanti (gabung total atau proporsional)?', hint: 'Transparansi gaji & tabungan', isDone: false },
-            { id: 'q_2', category: 'Keluarga', text: 'Rencana tempat tinggal setelah menikah? Kapan target mandiri?', isDone: false },
-            { id: 'q_3', category: 'Masa Lalu', text: 'Bagaimana batasan relasi yang disepakati dengan rekan lawan jenis / mantan?', isDone: false }
+            { id: 'q_1', category: 'Keuangan', text: 'Bagaimana model pembagian pengeluaran bulanan kita nanti (gabung total atau proporsional)?', hint: 'Transparansi gaji & tabungan' },
+            { id: 'q_2', category: 'Keluarga', text: 'Rencana tempat tinggal setelah menikah? Kapan target mandiri?' },
+            { id: 'q_3', category: 'Masa Lalu', text: 'Bagaimana batasan relasi yang disepakati dengan rekan lawan jenis / mantan?' }
           ];
           answers = {};
           saveDeck();
@@ -292,13 +290,12 @@
       }
     }
 
-    // Render Stacking Deck dengan Layering 3D Jelas
+    // Render Stacking Deck
     function renderDeck() {
       deckContainer.innerHTML = '';
-      const pending = questions.filter(q => !q.isDone);
-      deckCounter.innerText = `${pending.length} Kartu Menumpuk`;
+      deckCounter.innerText = `${questions.length} Kartu Berputar`;
 
-      if (pending.length === 0) {
+      if (questions.length === 0) {
         emptyDeck.classList.remove('hidden');
         emptyDeck.classList.add('flex');
         lucide.createIcons();
@@ -308,16 +305,15 @@
       emptyDeck.classList.add('hidden');
       emptyDeck.classList.remove('flex');
 
-      // Tampilkan 3 kartu dalam tumpukan visual
-      const visible = pending.slice(0, 3);
+      // Tampilkan maksimal 3 kartu teratas
+      const visible = questions.slice(0, 3);
 
       visible.forEach((q, idx) => {
         const card = document.createElement('div');
         card.id = `card_${q.id}`;
         
-        // Pengaturan kedalaman fisik (Stacking Layering)
-        const translateY = idx * 16; // Kartu ke-2 dan 3 menyembul di bawah
-        const scale = 1 - (idx * 0.05); // Skala mengecil ke belakang
+        const translateY = idx * 16;
+        const scale = 1 - (idx * 0.05);
         const zIndex = 30 - idx;
         const opacity = idx === 0 ? 1 : (idx === 1 ? 0.94 : 0.85);
         const shadowClass = idx === 0 ? 'card-shadow-1' : (idx === 1 ? 'card-shadow-2' : 'card-shadow-3');
@@ -328,15 +324,24 @@
         card.style.opacity = opacity;
 
         const qAns = answers[q.id] || { male: '', female: '' };
+        const isAnswered = qAns.male && qAns.female;
 
         card.innerHTML = `
           <!-- Header Kartu -->
           <div class="flex items-center justify-between shrink-0 mb-2">
-            ${q.category ? `
-              <span class="text-[10px] font-bold tracking-wide uppercase px-3 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full">
-                ${q.category}
-              </span>
-            ` : `<span class="text-[10px] font-medium text-slate-400">Pertanyaan Bebas</span>`}
+            <div class="flex items-center gap-1.5">
+              ${q.category ? `
+                <span class="text-[10px] font-bold tracking-wide uppercase px-3 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full">
+                  ${q.category}
+                </span>
+              ` : `<span class="text-[10px] font-medium text-slate-400">Pertanyaan Bebas</span>`}
+              
+              ${isAnswered ? `
+                <span class="text-[10px] font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full flex items-center gap-1">
+                  ✓ Terjawab
+                </span>
+              ` : ''}
+            </div>
             <span class="text-[10px] text-slate-400 font-mono font-medium">#${q.id.slice(-4)}</span>
           </div>
 
@@ -346,7 +351,7 @@
             ${q.hint ? `<p class="text-xs text-slate-500 italic">💡 ${q.hint}</p>` : ''}
           </div>
 
-          <!-- Dua Kolom Input Jawaban -->
+          <!-- Input Jawaban -->
           <div class="shrink-0 space-y-2.5 pt-2.5 border-t border-slate-100">
             <div>
               <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider block mb-1">Jawaban Pria</span>
@@ -366,7 +371,7 @@
         }
       });
 
-      // Bind input autosave
+      // Autosave listener
       document.querySelectorAll('textarea[data-qid]').forEach(input => {
         input.oninput = (e) => {
           const qId = e.target.getAttribute('data-qid');
@@ -382,7 +387,7 @@
       lucide.createIcons();
     }
 
-    // Touch Swipe Gesture pada Kartu Teratas
+    // Gesture Swipe Up & Left
     function attachDeckGestures(cardElement, qId) {
       let startX = 0;
       let startY = 0;
@@ -391,7 +396,7 @@
       let isDragging = false;
 
       cardElement.addEventListener('touchstart', (e) => {
-        if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) return;
+        if (['TEXTAREA', 'INPUT'].includes(e.target.tagName) || isAnimating) return;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         isDragging = true;
@@ -399,58 +404,66 @@
       }, { passive: true });
 
       cardElement.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
+        if (!isDragging || isAnimating) return;
         diffX = e.touches[0].clientX - startX;
         diffY = e.touches[0].clientY - startY;
 
-        // Efek translasi + rotasi mengikuti jari
         cardElement.style.transform = `translate(${diffX}px, ${diffY}px) rotate(${diffX * 0.04}deg)`;
       }, { passive: true });
 
       cardElement.addEventListener('touchend', () => {
-        if (!isDragging) return;
+        if (!isDragging || isAnimating) return;
         isDragging = false;
         cardElement.classList.add('card-transition');
 
-        // GESTURE 1: SWIPE UP -> Animasi Selesai
+        // GESTURE 1: SWIPE UP -> Putar Kartu ke Antrean Belakang
         if (diffY < -80) {
-          triggerSwipeUpAnimation(cardElement, qId);
+          triggerCycleCardUp(cardElement);
         } 
-        // GESTURE 2: SWIPE LEFT -> Masuk ke Mode Buat Pertanyaan
+        // GESTURE 2: SWIPE LEFT -> Form Buat Pertanyaan
         else if (diffX < -80) {
           cardElement.style.transform = 'translate(0px, 0px)';
           setMode('create');
         } 
-        // RESET KE POSISI SEMULA
+        // RESET
         else {
           cardElement.style.transform = 'translate(0px, 0px)';
         }
       });
     }
 
-    // Eksekusi Animasi Swipe Up yang Mulus
-    function triggerSwipeUpAnimation(cardElement, qId) {
-      cardElement.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease';
+    // Logika Siklus Looping (Swipe Up -> Masuk ke Belakang)
+    function triggerCycleCardUp(cardElement) {
+      if (isAnimating || questions.length === 0) return;
+      isAnimating = true;
+
+      // 1. Animasi Kartu Melayang ke Atas
+      cardElement.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
       cardElement.style.transform = 'translateY(-130dvh) scale(0.9) rotate(-8deg)';
       cardElement.style.opacity = '0';
 
       setTimeout(async () => {
-        const target = questions.find(q => q.id === qId);
-        if (target) target.isDone = true;
+        // 2. Ambil kartu pertama dan pindahkan ke urutan paling akhir
+        const firstCard = questions.shift();
+        if (firstCard) {
+          questions.push(firstCard);
+        }
+
+        // 3. Simpan rotasi urutan ke Firestore
         await saveDeck();
-      }, 250);
+        isAnimating = false;
+      }, 260);
     }
 
-    // Event Tombol
+    // Tombol Navigasi Bawah
     document.getElementById('btnTriggerNew').onclick = () => setMode('create');
     document.getElementById('btnEmptyAdd').onclick = () => setMode('create');
     document.getElementById('btnBackToDeck').onclick = () => setMode('deck');
 
-    document.getElementById('btnTriggerDone').onclick = () => {
+    document.getElementById('btnTriggerNext').onclick = () => {
       const topCard = deckContainer.querySelector('[id^="card_"]');
-      const pending = questions.filter(q => !q.isDone);
-      if (topCard && pending.length > 0) {
-        triggerSwipeUpAnimation(topCard, pending[0].id);
+      if (topCard) {
+        triggerCycleCardUp(topCard);
       }
     };
 
@@ -469,10 +482,10 @@
         id: 'q_' + Date.now(),
         category: category || null,
         text,
-        hint: hint || null,
-        isDone: false
+        hint: hint || null
       };
 
+      // Letakkan di urutan teratas tumpukan
       questions.unshift(newQ);
       await saveDeck();
 
