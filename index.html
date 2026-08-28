@@ -22,12 +22,31 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    @keyframes pulse-custom {
+
+    /* Animasi Berkedip Merah untuk Kolom Tanggal Kalender */
+    @keyframes pulse-red-box {
+      0%, 100% {
+        background-color: rgba(254, 226, 226, 0.95); /* red-100 */
+        border-color: #ef4444; /* red-500 */
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+      }
+      50% {
+        background-color: rgba(254, 202, 202, 0.5); /* red-200 */
+        border-color: #b91c1c; /* red-700 */
+        box-shadow: 0 0 14px 2px rgba(239, 68, 68, 0.45);
+      }
+    }
+
+    .cell-unread-blink {
+      animation: pulse-red-box 1.2s infinite ease-in-out !important;
+    }
+
+    @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.15); }
+      50% { opacity: 0.5; transform: scale(1.25); }
     }
     .badge-unread-ping {
-      animation: pulse-custom 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      animation: pulse-dot 1s infinite ease-in-out;
     }
   </style>
 </head>
@@ -155,8 +174,8 @@
           <div class="flex items-center gap-1.5">
             <span class="h-2 w-2 rounded-full bg-amber-500"></span> Agenda Personal Anggota Lain
           </div>
-          <div class="flex items-center gap-1.5 font-semibold text-rose-500">
-            <span class="h-2 w-2 rounded-full bg-rose-500 badge-unread-ping"></span> Ada Chat Baru
+          <div class="flex items-center gap-1.5 font-semibold text-rose-600">
+            <span class="h-2 w-2 rounded-full bg-rose-500 badge-unread-ping"></span> Kolom Berkedip: Ada Chat Baru
           </div>
         </div>
       </section>
@@ -334,6 +353,7 @@
       } catch (err) {}
     }
 
+    // Cek apakah agenda memiliki unread chat
     function checkHasUnreadChat(agenda) {
       if (!agenda.lastChatTime) return false;
       if (agenda.lastChatSenderId === userProfile.uid) return false;
@@ -342,6 +362,7 @@
       return agenda.lastChatTime > lastRead;
     }
 
+    // Tandai chat pada agenda ini sudah dibaca
     function markChatAsRead(agendaId) {
       readReceipts[agendaId] = Date.now();
       localStorage.setItem("group_chat_read_receipts", JSON.stringify(readReceipts));
@@ -505,7 +526,7 @@
     }
 
     // ----------------------------------------------------
-    // LOGIKA KALENDER 1 BULAN
+    // LOGIKA KALENDER 1 BULAN (DENGAN EFEK BERKEDIP MERAH)
     // ----------------------------------------------------
     document.getElementById("btnPrevMonth").addEventListener("click", () => {
       currentViewingDate.setMonth(currentViewingDate.getMonth() - 1);
@@ -543,6 +564,7 @@
 
       const todayStr = new Date().toISOString().split('T')[0];
 
+      // Hari dari bulan sebelumnya
       for (let x = firstDayIndex; x > 0; x--) {
         const dayNum = prevMonthDays - x + 1;
         const cell = document.createElement("div");
@@ -551,6 +573,7 @@
         gridEl.appendChild(cell);
       }
 
+      // Hari dalam bulan aktif
       for (let day = 1; day <= totalDays; day++) {
         const formattedDay = String(day).padStart(2, '0');
         const formattedMonth = String(month + 1).padStart(2, '0');
@@ -565,16 +588,26 @@
           return dateStr >= aStart && dateStr <= aEnd;
         });
 
+        // Deteksi apakah ada notifikasi chat baru pada tanggal ini
         const hasAnyUnreadInThisDay = dayEvents.some(a => checkHasUnreadChat(a));
 
         const cell = document.createElement("div");
-        cell.className = `h-16 md:h-20 p-1.5 border rounded-xl cursor-pointer transition flex flex-col justify-between text-xs relative ${
-          isSelected 
-            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
-            : isToday 
-              ? 'border-indigo-400 bg-indigo-50/40 text-indigo-900 font-bold hover:bg-slate-50' 
-              : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50'
-        }`;
+
+        // Styling kondisi kolom tanggal:
+        // Jika memiliki unread chat, tambahkan class animasi 'cell-unread-blink'
+        let cellBaseClass = "h-16 md:h-20 p-1.5 border rounded-xl cursor-pointer transition flex flex-col justify-between text-xs relative ";
+        
+        if (hasAnyUnreadInThisDay) {
+          cellBaseClass += "cell-unread-blink font-bold text-rose-950 shadow-sm ";
+        } else if (isSelected) {
+          cellBaseClass += "border-slate-900 bg-slate-900 text-white shadow-sm ";
+        } else if (isToday) {
+          cellBaseClass += "border-indigo-400 bg-indigo-50/40 text-indigo-900 font-bold hover:bg-slate-50 ";
+        } else {
+          cellBaseClass += "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50 ";
+        }
+
+        cell.className = cellBaseClass;
 
         let badgesHtml = '<div class="space-y-1 overflow-hidden">';
         dayEvents.slice(0, 2).forEach(ev => {
@@ -583,7 +616,9 @@
           const hasUnread = checkHasUnreadChat(ev);
 
           let badgeStyle = '';
-          if (isSelected) {
+          if (hasAnyUnreadInThisDay) {
+            badgeStyle = hasUnread ? 'bg-rose-500 text-white font-bold' : 'bg-rose-200/80 text-rose-900 border border-rose-300';
+          } else if (isSelected) {
             badgeStyle = isPersonal ? (isMine ? 'bg-emerald-400 text-slate-900' : 'bg-amber-400 text-slate-900') : 'bg-indigo-400 text-slate-900';
           } else {
             if (!isPersonal) {
@@ -598,7 +633,7 @@
           badgesHtml += `
             <div class="truncate text-[9px] px-1 py-0.5 rounded font-medium flex items-center justify-between gap-1 ${badgeStyle}">
               <span class="truncate">${ev.title}</span>
-              ${hasUnread ? '<span class="h-1.5 w-1.5 rounded-full bg-rose-500 badge-unread-ping shrink-0"></span>' : ''}
+              ${hasUnread ? '<span class="h-1.5 w-1.5 rounded-full bg-white badge-unread-ping shrink-0"></span>' : ''}
             </div>
           `;
         });
@@ -609,9 +644,9 @@
 
         cell.innerHTML = `
           <div class="flex justify-between items-center">
-            <span class="font-semibold text-xs ${isToday && !isSelected ? 'text-indigo-600 font-extrabold' : ''}">${day}</span>
+            <span class="font-semibold text-xs ${isToday && !isSelected && !hasAnyUnreadInThisDay ? 'text-indigo-600 font-extrabold' : ''}">${day}</span>
             <div class="flex items-center gap-1">
-              ${hasAnyUnreadInThisDay ? '<span class="h-2 w-2 rounded-full bg-rose-500 badge-unread-ping" title="Ada chat baru!"></span>' : ''}
+              ${hasAnyUnreadInThisDay ? '<span class="h-2 w-2 rounded-full bg-rose-600 badge-unread-ping" title="Ada chat baru!"></span>' : ''}
               ${dayEvents.length > 0 && !isSelected && !hasAnyUnreadInThisDay ? `<span class="h-1.5 w-1.5 rounded-full ${dayEvents.some(d => d.type === 'couple') ? 'bg-indigo-600' : (dayEvents.some(d => d.createdBy === userProfile.uid) ? 'bg-emerald-500' : 'bg-amber-500')}"></span>` : ''}
             </div>
           </div>
@@ -721,7 +756,7 @@
         ` : '';
 
         const card = document.createElement("div");
-        card.className = `rounded-xl border p-4 transition shadow-sm ${cardBgClass} ${hasUnread ? 'ring-2 ring-rose-400/80' : ''}`;
+        card.className = `rounded-xl border p-4 transition shadow-sm ${cardBgClass} ${hasUnread ? 'ring-2 ring-rose-500 bg-rose-50/50' : ''}`;
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-2">
@@ -828,7 +863,7 @@
             ...data
           });
 
-          // Cek jika ada chat baru dari anggota lain saat aplikasi aktif
+          // Cek notifikasi baru saat web aktif
           if (initialLoadDone && data.lastChatSenderId && data.lastChatSenderId !== userProfile.uid) {
             const lastRead = readReceipts[docSnap.id] || 0;
             if (data.lastChatTime > lastRead) {
