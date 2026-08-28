@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CoupleSync - Kalender Agenda & Live Lokasi</title>
+  <title>GroupSync - Kalender Agenda & Live Lokasi Grup</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    #map { height: 230px; border-radius: 0.75rem; }
+    #map { height: 240px; border-radius: 0.75rem; }
     .glass-card {
       background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(12px);
@@ -37,8 +37,8 @@
   <div id="joinScreen" class="flex min-h-screen items-center justify-center p-4">
     <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 p-8 shadow-md">
       <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">CoupleSync</h1>
-        <p class="text-xs text-slate-500 mt-1">Isi profil singkat untuk berbagi kalender, lokasi & chat dengan pasangan</p>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">GroupSync</h1>
+        <p class="text-xs text-slate-500 mt-1">Berbagi agenda, lokasi live, dan obrolan untuk keluarga, tim, atau komunitas</p>
       </div>
 
       <form id="joinForm" class="space-y-4">
@@ -60,13 +60,13 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Pairing Code (Harus Sama)</label>
-          <input id="inputPairCode" type="text" required placeholder="Contoh: KITA-2026" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none uppercase font-mono" />
-          <p class="text-[11px] text-slate-400 mt-1">Pastikan pasangan memasukkan kode yang sama persis.</p>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Kode Grup (Group Code)</label>
+          <input id="inputPairCode" type="text" required placeholder="Contoh: KELUARGA-BESAR / TIM-RIDE" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none uppercase font-mono" />
+          <p class="text-[11px] text-slate-400 mt-1">Bagikan kode ini kepada seluruh anggota agar terhubung dalam grup yang sama.</p>
         </div>
 
         <button type="submit" class="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">
-          Buka Kalender Bersama
+          Masuk ke Ruang Grup
         </button>
       </form>
     </div>
@@ -86,7 +86,7 @@
           </div>
           <p class="text-xs text-slate-500 flex items-center gap-1">
             <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Pair Code: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
+            Grup: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
           </p>
         </div>
       </div>
@@ -95,26 +95,25 @@
           <i data-lucide="plus" class="h-4 w-4"></i> Tambah Agenda
         </button>
         <button id="btnSwitchAccount" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">
-          Ganti Profil
+          Ganti Profil / Grup
         </button>
       </div>
     </header>
 
-    <!-- Location Card (Peta Leaflet) -->
+    <!-- Location Card (Peta Leaflet Multi-Member) -->
     <section class="glass-card rounded-2xl border border-slate-200 p-4 shadow-sm space-y-2">
       <div class="flex items-center justify-between">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
           <i data-lucide="map-pin" class="h-4 w-4 text-slate-600"></i>
-          Live Lokasi Pasangan
+          Live Lokasi Anggota Grup
         </h3>
         <button id="btnUpdateLocation" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
-          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Refresh Lokasi Saya
+          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Perbarui Lokasi Saya
         </button>
       </div>
       <div id="map"></div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
+      <div id="membersLocationContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-slate-600 pt-1 max-h-32 overflow-y-auto">
         <div id="myLocInfo" class="rounded-lg bg-slate-50 p-2 border border-slate-200/60">Lokasi Saya: Memuat GPS...</div>
-        <div id="partnerLocInfo" class="rounded-lg bg-slate-50 p-2 border border-slate-200/60">Lokasi Pasangan: Menunggu data pasangan...</div>
       </div>
     </section>
 
@@ -148,13 +147,13 @@
 
         <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
           <div class="flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-indigo-500"></span> Agenda Berdua
+            <span class="h-2 w-2 rounded-full bg-indigo-500"></span> Agenda Grup (Bersama)
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Agenda Pribadi Saya
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Agenda Personal Saya
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Agenda Pribadi Pasangan
+            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Agenda Personal Anggota Lain
           </div>
           <div class="flex items-center gap-1.5 font-semibold text-rose-500">
             <span class="h-2 w-2 rounded-full bg-rose-500 badge-unread-ping"></span> Ada Chat Baru
@@ -199,13 +198,13 @@
         <input id="editAgendaId" type="hidden" value="" />
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Judul Agenda</label>
-          <input id="agendaTitle" type="text" required placeholder="Contoh: Kuliah / Meeting / Dinner" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+          <input id="agendaTitle" type="text" required placeholder="Contoh: Rapat Tim / Acara Keluarga / Kerja Mandiri" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none" />
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Sifat Agenda</label>
           <select id="agendaType" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none bg-white">
-            <option value="couple">Agenda Berdua (Kegiatan Bersama)</option>
-            <option value="private">Agenda Pribadi (Biar Pasangan Tahu Jadwal Saya)</option>
+            <option value="couple">Agenda Grup (Kegiatan Bersama)</option>
+            <option value="private">Agenda Personal (Jadwal Mandiri)</option>
           </select>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -220,7 +219,7 @@
         </div>
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Catatan / Lokasi</label>
-          <textarea id="agendaDesc" rows="2" placeholder="Catatan tempat, perlengkapan, dsb..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none"></textarea>
+          <textarea id="agendaDesc" rows="2" placeholder="Catatan lokasi, perlengkapan, atau deskripsi agenda..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none"></textarea>
         </div>
         <button id="btnSubmitAgenda" type="submit" class="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">Simpan Agenda</button>
       </form>
@@ -287,8 +286,8 @@
     const db = getFirestore(app);
 
     // State Aplikasi
-    let userProfile = JSON.parse(localStorage.getItem("couple_user_profile")) || null;
-    let readReceipts = JSON.parse(localStorage.getItem("couple_chat_read_receipts")) || {};
+    let userProfile = JSON.parse(localStorage.getItem("group_user_profile")) || null;
+    let readReceipts = JSON.parse(localStorage.getItem("group_chat_read_receipts")) || {};
     let allAgendas = [];
     let currentViewingDate = new Date();
     let selectedDateStr = new Date().toISOString().split('T')[0];
@@ -298,10 +297,10 @@
     let markers = {};
 
     function getOrCreateDeviceId() {
-      let devId = localStorage.getItem("couple_device_id");
+      let devId = localStorage.getItem("group_device_id");
       if (!devId) {
         devId = "user_" + Math.random().toString(36).substring(2, 9);
-        localStorage.setItem("couple_device_id", devId);
+        localStorage.setItem("group_device_id", devId);
       }
       return devId;
     }
@@ -319,7 +318,7 @@
       }).addTo(map);
     }
 
-    // Sound Beep Notifikasi In-App
+    // Sound Alert Chat Baru
     function playNotificationTone() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -335,7 +334,6 @@
       } catch (err) {}
     }
 
-    // Fungsi mengecek apakah agenda memiliki unread chat
     function checkHasUnreadChat(agenda) {
       if (!agenda.lastChatTime) return false;
       if (agenda.lastChatSenderId === userProfile.uid) return false;
@@ -344,10 +342,9 @@
       return agenda.lastChatTime > lastRead;
     }
 
-    // Tandai chat pada agenda ini sudah dibaca
     function markChatAsRead(agendaId) {
       readReceipts[agendaId] = Date.now();
-      localStorage.setItem("couple_chat_read_receipts", JSON.stringify(readReceipts));
+      localStorage.setItem("group_chat_read_receipts", JSON.stringify(readReceipts));
       renderCalendar();
       renderSelectedDayAgendas();
     }
@@ -367,13 +364,13 @@
 
       if (!name || !pairCode) return;
       userProfile = { uid: deviceId, name, gender, pairCode };
-      localStorage.setItem("couple_user_profile", JSON.stringify(userProfile));
+      localStorage.setItem("group_user_profile", JSON.stringify(userProfile));
       loadMainApp();
     });
 
     document.getElementById("btnSwitchAccount").addEventListener("click", () => {
-      if (confirm("Ganti profil atau Pairing Code?")) {
-        localStorage.removeItem("couple_user_profile");
+      if (confirm("Ganti profil atau Kode Grup?")) {
+        localStorage.removeItem("group_user_profile");
         location.reload();
       }
     });
@@ -430,7 +427,7 @@
     });
 
     // ----------------------------------------------------
-    // GEOLOKASI (Realtime Firestore)
+    // GEOLOKASI (Multi-Member Live Location)
     // ----------------------------------------------------
     function syncLocation() {
       if ("geolocation" in navigator) {
@@ -460,7 +457,8 @@
       const q = query(collection(db, "locations"), where("pairCode", "==", userProfile.pairCode));
       onSnapshot(q, (snapshot) => {
         const bounds = [];
-        let foundPartner = false;
+        const container = document.getElementById("membersLocationContainer");
+        container.innerHTML = "";
 
         snapshot.forEach((docSnap) => {
           const loc = docSnap.data();
@@ -472,12 +470,16 @@
 
           const iconColor = loc.gender === 'female' ? '#f43f5e' : '#2563eb';
 
-          if (isMe) {
-            document.getElementById("myLocInfo").innerHTML = `<b>Lokasi Saya:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
-          } else {
-            foundPartner = true;
-            document.getElementById("partnerLocInfo").innerHTML = `<b>Lokasi ${loc.name}:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
-          }
+          const card = document.createElement("div");
+          card.className = `rounded-lg p-2 border ${isMe ? 'bg-indigo-50/50 border-indigo-200 font-semibold' : 'bg-slate-50 border-slate-200/60'}`;
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span>${isMe ? '📍 Lokasi Saya' : `👤 ${loc.name}`}</span>
+              <span class="text-[10px] text-slate-400">${loc.gender === 'female' ? '👩' : '👨'}</span>
+            </div>
+            <div class="text-[11px] text-slate-500 font-mono mt-0.5">${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}</div>
+          `;
+          container.appendChild(card);
 
           if (!markers[loc.uid]) {
             markers[loc.uid] = L.circleMarker(latlng, {
@@ -492,8 +494,8 @@
           }
         });
 
-        if (!foundPartner) {
-          document.getElementById("partnerLocInfo").textContent = "Menunggu pasangan membuka web...";
+        if (snapshot.empty) {
+          container.innerHTML = `<div class="text-slate-400 text-xs py-1">Belum ada lokasi anggota lain yang terdeteksi.</div>`;
         }
 
         if (bounds.length > 0) {
@@ -576,15 +578,15 @@
 
         let badgesHtml = '<div class="space-y-1 overflow-hidden">';
         dayEvents.slice(0, 2).forEach(ev => {
-          const isPrivate = ev.type === 'private';
+          const isPersonal = ev.type === 'private';
           const isMine = ev.createdBy === userProfile.uid;
           const hasUnread = checkHasUnreadChat(ev);
 
           let badgeStyle = '';
           if (isSelected) {
-            badgeStyle = isPrivate ? (isMine ? 'bg-emerald-400 text-slate-900' : 'bg-amber-400 text-slate-900') : 'bg-indigo-400 text-slate-900';
+            badgeStyle = isPersonal ? (isMine ? 'bg-emerald-400 text-slate-900' : 'bg-amber-400 text-slate-900') : 'bg-indigo-400 text-slate-900';
           } else {
-            if (!isPrivate) {
+            if (!isPersonal) {
               badgeStyle = 'bg-indigo-100 text-indigo-900 border border-indigo-200';
             } else if (isMine) {
               badgeStyle = 'bg-emerald-100 text-emerald-900 border border-emerald-200';
@@ -627,7 +629,7 @@
     }
 
     // ----------------------------------------------------
-    // DETAIL AGENDA & PENANDA CHAT BARU
+    // DETAIL AGENDA HARIAN & AKSI CRUD
     // ----------------------------------------------------
     function calculateDuration(startStr, endStr) {
       const s = new Date(startStr);
@@ -681,7 +683,7 @@
       }
 
       dayEvents.forEach((item) => {
-        const isPrivate = item.type === "private";
+        const isPersonal = item.type === "private";
         const isMine = item.createdBy === userProfile.uid;
         const durationText = calculateDuration(item.start, item.end);
         const hasUnread = checkHasUnreadChat(item);
@@ -693,16 +695,16 @@
         let badgeClass = '';
         let cardBgClass = '';
 
-        if (!isPrivate) {
-          badgeLabel = 'Agenda Berdua';
+        if (!isPersonal) {
+          badgeLabel = 'Agenda Grup (Bersama)';
           badgeClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200';
           cardBgClass = 'bg-white border-slate-200 hover:border-slate-300';
         } else if (isMine) {
-          badgeLabel = `Pribadi (Saya)`;
+          badgeLabel = `Personal (Saya)`;
           badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
           cardBgClass = 'bg-emerald-50/40 border-emerald-200';
         } else {
-          badgeLabel = `Pribadi (${item.createdByName || 'Pasangan'})`;
+          badgeLabel = `Personal (${item.createdByName || 'Anggota'})`;
           badgeClass = 'bg-amber-100 text-amber-900 border border-amber-200';
           cardBgClass = 'bg-amber-50/50 border-amber-200';
         }
@@ -816,7 +818,7 @@
       );
 
       onSnapshot(q, (snapshot) => {
-        let hasNewChatFromPartner = false;
+        let hasNewChatFromOthers = false;
 
         allAgendas = [];
         snapshot.forEach((docSnap) => {
@@ -826,16 +828,16 @@
             ...data
           });
 
-          // Cek jika ada chat baru dari pasangan saat aplikasi terbuka
+          // Cek jika ada chat baru dari anggota lain saat aplikasi aktif
           if (initialLoadDone && data.lastChatSenderId && data.lastChatSenderId !== userProfile.uid) {
             const lastRead = readReceipts[docSnap.id] || 0;
             if (data.lastChatTime > lastRead) {
-              hasNewChatFromPartner = true;
+              hasNewChatFromOthers = true;
             }
           }
         });
 
-        if (initialLoadDone && hasNewChatFromPartner) {
+        if (initialLoadDone && hasNewChatFromOthers) {
           playNotificationTone();
         }
         initialLoadDone = true;
@@ -893,7 +895,7 @@
     });
 
     // ----------------------------------------------------
-    // CHAT ROOM PER AGENDA & UPDATE LAST CHAT TIMESTAMP
+    // CHAT ROOM PER AGENDA
     // ----------------------------------------------------
     const chatModal = document.getElementById("chatModal");
     const chatMessages = document.getElementById("chatMessages");
@@ -967,7 +969,6 @@
       const agendaId = currentActiveChatAgendaId;
       chatInput.value = "";
 
-      // 1. Simpan pesan chat ke sub-collection
       await addDoc(collection(db, "agendas", agendaId, "chats"), {
         senderId: userProfile.uid,
         senderName: userProfile.name,
@@ -976,7 +977,6 @@
         timestamp: serverTimestamp()
       });
 
-      // 2. Update metadata lastChat di dokumen agenda utama untuk memicu badge penanda di kalender pasangan
       await updateDoc(doc(db, "agendas", agendaId), {
         lastChatTime: Date.now(),
         lastChatSenderId: userProfile.uid,
