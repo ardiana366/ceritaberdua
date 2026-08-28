@@ -1,244 +1,198 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Deep Talk Deck</title>
-  <!-- Tailwind CSS CDN -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda & Live Location</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Flat Icons CDN -->
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    html, body {
-      height: 100%;
-      height: 100dvh;
-      overflow: hidden;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    .scrollable-content {
-      overflow-y: auto;
-      touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
-    }
-    .deck-perspective {
-      perspective: 1200px;
-      perspective-origin: center top;
-    }
-    .card-transition {
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, box-shadow 0.35s ease;
-    }
-    .card-shadow-1 {
-      box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.12), 0 8px 16px -6px rgba(15, 23, 42, 0.06);
-    }
-    .card-shadow-2 {
-      box-shadow: 0 14px 28px -8px rgba(15, 23, 42, 0.09);
-    }
-    .card-shadow-3 {
-      box-shadow: 0 8px 18px -6px rgba(15, 23, 42, 0.06);
+    #map { height: 260px; border-radius: 0.75rem; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 flex flex-col justify-between p-4 pb-6 h-full relative overflow-hidden">
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen pb-12">
 
-  <!-- ======================================================== -->
-  <!-- 0. SCREEN AWAL: BUAT / JOIN ROOM (GATEWAY)               -->
-  <!-- ======================================================== -->
-  <div id="roomGatewayScreen" class="fixed inset-0 z-50 bg-slate-100 flex flex-col justify-between p-5 max-w-sm mx-auto h-full scrollable-content" style="display: flex;">
-    <div class="my-auto space-y-6">
-      
-      <div class="text-center space-y-2">
-        <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-3xl border border-rose-100 shadow-sm">
-          <i data-lucide="layers" class="w-8 h-8"></i>
-        </div>
-        <h1 class="text-2xl font-black tracking-tight text-slate-900">Deep Talk Deck</h1>
-        <p class="text-xs text-slate-500 max-w-[240px] mx-auto leading-relaxed">
-          Tanya jawab bergantian secara terstruktur bersama pasangan.
-        </p>
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="flex min-h-screen items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 p-8 shadow-sm">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">CoupleSync</h1>
+        <p class="text-sm text-slate-500 mt-1">Masuk untuk melihat agenda bersama & lokasi pasangan</p>
       </div>
 
-      <div class="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-xl space-y-4">
+      <div class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-2">Pilih Peranmu</label>
-          <div class="grid grid-cols-2 gap-2.5">
-            <button id="btnGatewayMale" type="button" class="py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95">
-              <i data-lucide="user" class="w-4 h-4"></i>
-              <span>Pria</span>
-            </button>
-            <button id="btnGatewayFemale" type="button" class="py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95">
-              <i data-lucide="user-check" class="w-4 h-4"></i>
-              <span>Wanita</span>
-            </button>
-          </div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Email</label>
+          <input id="authEmail" type="email" placeholder="nama@email.com" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Password</label>
+          <input id="authPass" type="password" placeholder="••••••••" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nama Tampilan</label>
+          <input id="authName" type="text" placeholder="Nama Anda" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Pairing Code (Sama dengan Pasangan)</label>
+          <input id="authPairCode" type="text" placeholder="contoh: LOVE-2026" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800" />
         </div>
 
-        <div class="space-y-1.5 pt-1">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold text-slate-700">Nama / Kode Room</label>
-            <button id="btnGenRoom" type="button" class="text-[10px] text-rose-600 font-semibold hover:underline flex items-center gap-1">
-              <i data-lucide="shuffle" class="w-3 h-3"></i> Acak Kode
-            </button>
-          </div>
-          <div class="relative">
-            <i data-lucide="key" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-            <input id="gatewayRoomInput" type="text" placeholder="Ketik kode room..." class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 font-mono text-xs focus:outline-none focus:border-rose-400 focus:bg-white transition uppercase tracking-wider font-semibold">
-          </div>
-          <p class="text-[10px] text-slate-400">Gunakan kode yang sama di HP pasanganmu.</p>
+        <div class="flex gap-2 pt-2">
+          <button id="btnLogin" class="w-1/2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">Masuk</button>
+          <button id="btnRegister" class="w-1/2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">Daftar</button>
         </div>
+        <p id="authError" class="text-xs text-rose-500 text-center"></p>
+      </div>
+    </div>
+  </div>
 
-        <button id="btnEnterRoom" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 transition active:scale-95 flex items-center justify-center gap-2">
-          <span>Mulai Diskusi</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+  <!-- MAIN APP -->
+  <div id="appScreen" class="hidden max-w-5xl mx-auto px-4 pt-6 space-y-6">
+
+    <!-- Top Navbar -->
+    <header class="glass-card rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm" id="userInitial">U</div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900" id="userNameLabel">User</h2>
+          <p class="text-xs text-slate-500 flex items-center gap-1">
+            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+            Pair: <span id="pairCodeLabel" class="font-semibold text-slate-700"></span>
+          </p>
+        </div>
+      </div>
+      <button id="btnLogout" class="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Keluar</button>
+    </header>
+
+    <!-- Location Card (Peta Leaflet) -->
+    <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+          <i data-lucide="map-pin" class="h-4 w-4 text-slate-600"></i>
+          Live Lokasi Pasangan
+        </h3>
+        <button id="btnRefreshLoc" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
+          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Update Lokasi Saya
+        </button>
+      </div>
+      <div id="map"></div>
+      <div id="locationStatus" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-600 pt-1">
+        <div id="myLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Saya: Memuat...</div>
+        <div id="partnerLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Pasangan: Menunggu data...</div>
+      </div>
+    </section>
+
+    <!-- Main Grid: Timeline Agenda & Form Tambah -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Form Tambah Agenda -->
+      <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 lg:col-span-1 h-fit">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+          <i data-lucide="calendar-plus" class="h-4 w-4 text-slate-600"></i>
+          Tambah Agenda
+        </h3>
+        <form id="agendaForm" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Judul Agenda</label>
+            <input id="agendaTitle" type="text" required placeholder="Contoh: Weekend Ride / Dinner" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Tipe Visibilitas</label>
+            <select id="agendaType" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none bg-white">
+              <option value="couple">Agenda Berdua (Publik Pasangan)</option>
+              <option value="private">Agenda Pribadi (Hanya Saya)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Mulai (Tanggal & Jam)</label>
+            <input id="agendaStart" type="datetime-local" required class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Selesai (Tanggal & Jam)</label>
+            <input id="agendaEnd" type="datetime-local" required class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Catatan / Lokasi</label>
+            <textarea id="agendaDesc" rows="2" placeholder="Detail kegiatan atau titik kumpul..." class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none"></textarea>
+          </div>
+          <button type="submit" class="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 transition">Simpan Agenda</button>
+        </form>
+      </section>
+
+      <!-- Timeline & List Agenda -->
+      <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-2 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+            <i data-lucide="clock" class="h-4 w-4 text-slate-600"></i>
+            Timeline & Durasi Agenda
+          </h3>
+          <span id="agendaCount" class="text-xs rounded-full bg-slate-200 px-2.5 py-0.5 font-medium text-slate-700">0 Agenda</span>
+        </div>
+        
+        <div id="agendaList" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+          <!-- Agenda cards di-render di sini via JS -->
+          <p class="text-sm text-slate-400 text-center py-8">Belum ada agenda yang tersimpan.</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- CHAT ROOM MODAL (PER AGENDA) -->
+  <div id="chatModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl flex flex-col h-[520px]">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div>
+          <h4 id="chatModalTitle" class="text-base font-bold text-slate-900">Agenda Chat</h4>
+          <p id="chatModalSubtitle" class="text-xs text-slate-500">Ruang diskusi agenda</p>
+        </div>
+        <button id="btnCloseChat" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <i data-lucide="x" class="h-5 w-5"></i>
         </button>
       </div>
 
-    </div>
-
-    <div class="text-center py-2 shrink-0">
-      <p class="text-[11px] text-slate-400">Sinkronisasi Realtime via Cloud</p>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- 1. HEADER UTAMA                                          -->
-  <!-- ======================================================== -->
-  <header class="flex items-center justify-between z-20 shrink-0 max-w-sm mx-auto w-full">
-    <div class="flex items-center gap-2">
-      <button id="btnSwitchRole" class="px-2.5 py-1.5 rounded-2xl border shadow-sm flex items-center gap-1.5 transition active:scale-95 bg-white border-slate-200">
-        <span id="roleBadgeIconWrapper" class="flex items-center">
-          <i data-lucide="user" class="w-3.5 h-3.5 text-slate-700"></i>
-        </span>
-        <span id="roleBadgeText" class="text-xs font-bold text-slate-800">Pria</span>
-      </button>
-
-      <button id="btnExitRoom" class="flex items-center gap-1.5 bg-white border border-rose-200/80 rounded-2xl px-2.5 py-1.5 text-xs shadow-sm hover:bg-rose-50 transition active:scale-95 text-rose-600" title="Keluar & Hapus Room">
-        <i data-lucide="log-out" class="w-3 h-3 text-rose-500"></i>
-        <span id="currentRoomText" class="font-mono text-[11px] font-bold">---</span>
-      </button>
-    </div>
-
-    <button id="btnOpenHint" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 rounded-2xl text-slate-700 hover:text-slate-900 shadow-sm active:scale-95 transition text-xs font-semibold">
-      <i data-lucide="help-circle" class="w-3.5 h-3.5 text-rose-500"></i>
-      <span>Cara Bermain</span>
-    </button>
-  </header>
-
-  <!-- ======================================================== -->
-  <!-- 2. DUAL-PANEL VIEWPORT (MAIN APP SLIDER)                 -->
-  <!-- ======================================================== -->
-  <div class="relative flex-1 w-full max-w-sm mx-auto my-auto overflow-hidden h-[78dvh] rounded-3xl">
-    <main id="mainSlider" class="flex h-full w-[200%] card-transition" style="transform: translateX(0%);">
-      
-      <!-- PANEL A: MODE MENJAWAB / LOOPING DECK -->
-      <div id="deckPanel" class="w-1/2 h-full flex flex-col justify-center relative touch-pan-y">
-        
-        <!-- Empty State -->
-        <div id="emptyDeck" class="flex flex-col items-center justify-center text-center p-6 space-y-4 bg-white/90 border border-slate-200 rounded-3xl w-full h-full shadow-sm">
-          <div class="p-4 bg-rose-50 text-rose-500 rounded-full shadow-inner">
-            <i data-lucide="inbox" class="w-8 h-8"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-slate-800">Belum Ada Pertanyaan</h3>
-            <p class="text-xs text-slate-500 mt-1 max-w-[220px]">Geser layar ke kiri (Swipe Left) untuk membuat pertanyaan pertama bagi pasanganmu.</p>
-          </div>
-          <button id="btnEmptyAdd" class="text-xs bg-rose-500 hover:bg-rose-600 text-white px-4 py-2.5 rounded-2xl font-semibold shadow-md shadow-rose-500/20 transition flex items-center gap-1.5 mx-auto active:scale-95">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            <span>Buat Pertanyaan Sekarang</span>
-          </button>
-        </div>
-
-        <!-- Container Tumpukan Kartu 3D -->
-        <div id="deckContainer" class="deck-perspective relative w-full h-full"></div>
+      <!-- Messages Area -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm">
+        <p class="text-xs text-slate-400 text-center py-6">Belum ada pesan. Mulai obrolan untuk agenda ini.</p>
       </div>
 
-      <!-- PANEL B: MODE BUAT PERTANYAAN -->
-      <div id="createPanel" class="w-1/2 h-full flex flex-col justify-center relative touch-pan-y">
-        <div class="bg-rose-50/90 border-2 border-rose-200 rounded-3xl p-5 w-full h-full flex flex-col justify-between shadow-xl">
-          <div class="flex items-center justify-between pb-3 border-b border-rose-200/80 shrink-0">
-            <div class="flex items-center gap-2">
-              <div class="p-1.5 bg-rose-500 text-white rounded-xl">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <h2 class="text-sm font-bold text-slate-900">Tanya ke Pasangan</h2>
-                <p id="targetQuestionLabel" class="text-[10px] text-slate-500">Pertanyaan ini akan dijawab oleh dia</p>
-              </div>
-            </div>
-            <button id="btnBackToDeck" class="flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:text-rose-800 active:scale-95 transition bg-white/80 px-2 py-1 rounded-xl border border-rose-200">
-              <span>Kembali</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
+      <!-- Message Input -->
+      <form id="chatForm" class="flex gap-2 pt-3 border-t border-slate-200">
+        <input id="chatInput" type="text" required placeholder="Ketik pesan..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+        <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition flex items-center gap-1">
+          <i data-lucide="send" class="h-4 w-4"></i>
+        </button>
+      </form>
 
-          <div class="scrollable-content space-y-3.5 text-xs flex-1 my-3 pr-1">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Kategori (Opsional)</label>
-              <input id="inputCategory" type="text" placeholder="Misal: Finansial, Kebiasaan, Masa Depan..." class="w-full p-3 bg-white border border-rose-200 rounded-2xl text-slate-800 focus:outline-none focus:border-rose-500 transition shadow-sm">
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Pertanyaan <span class="text-rose-500">*</span></label>
-              <textarea id="inputText" rows="4" placeholder="Tuliskan pertanyaan yang ingin kamu ketahui dari sudut pandang dia..." class="w-full p-3 bg-white border border-rose-200 rounded-2xl text-slate-800 focus:outline-none focus:border-rose-500 transition scrollable-content shadow-sm"></textarea>
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-500 mb-1">Catatan / Petunjuk Konteks (Opsional)</label>
-              <input id="inputHint" type="text" placeholder="Misal: Tolong jawab dengan terbuka dan jujur" class="w-full p-3 bg-white border border-rose-200 rounded-2xl text-slate-600 focus:outline-none focus:border-rose-400 focus:bg-white transition shadow-sm">
-            </div>
-          </div>
-
-          <button id="btnSubmitQuestion" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-rose-500/25 shrink-0 active:scale-95 transition flex items-center justify-center gap-2">
-            <i data-lucide="send" class="w-4 h-4"></i>
-            <span>Kirim ke Tumpukan Kartu</span>
-          </button>
-        </div>
-      </div>
-
-    </main>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- 3. MODAL CARA BERMAIN                                    -->
-  <!-- ======================================================== -->
-  <div id="hintModal" class="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-md hidden flex-col items-center justify-center p-5">
-    <div class="bg-white border border-slate-100 rounded-3xl p-6 w-full max-w-xs space-y-5 shadow-2xl text-center">
-      <div class="inline-flex p-3.5 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 shadow-inner">
-        <i data-lucide="compass" class="w-7 h-7"></i>
-      </div>
-      
-      <div>
-        <h3 class="text-base font-bold text-slate-900">Aturan & Cara Bermain</h3>
-        <p class="text-xs text-slate-500 mt-1">Sistem kontrol dan gestur sentuh kartu:</p>
-      </div>
-
-      <div class="space-y-3 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
-        <div class="flex items-center gap-3">
-          <span class="p-2 bg-rose-100 text-rose-600 rounded-xl shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Up (Khusus Penanya):</strong> Memindahkan kartu ke urutan belakang setelah selesai.</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="p-2 bg-sky-100 text-sky-700 rounded-xl shrink-0"><i data-lucide="arrow-down" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Down (Review Lokal):</strong> Mundur untuk melihat kembali pertanyaan & jawaban sebelumnya tanpa mengubah layar pasangan.</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="p-2 bg-amber-100 text-amber-700 rounded-xl shrink-0"><i data-lucide="arrow-left" class="w-4 h-4"></i></span>
-          <p><strong class="text-slate-800">Swipe Left:</strong> Buka layar untuk membuat pertanyaan baru bagi dia.</p>
-        </div>
-      </div>
-
-      <button id="btnCloseHint" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-bold shadow-md shadow-rose-500/25 transition active:scale-95">
-        Saya Mengerti
-      </button>
     </div>
   </div>
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase & App Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
 
+    // ----------------------------------------------------
+    // 1. KONFIGURASI FIREBASE (Ganti dengan Config Anda)
+    // ----------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyC5qI-YCwJK9Xj5Fci7vIArFMetj1ZP2_w",
       authDomain: "ceritaberdua-9f71d.firebaseapp.com",
@@ -250,551 +204,344 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    const CARD_PALETTES = [
-      { bg: 'bg-rose-50/95', border: 'border-rose-200', tagBg: 'bg-white', tagText: 'text-rose-600', tagBorder: 'border-rose-200', accent: 'text-rose-600', inputBg: 'bg-white', focusRing: 'focus:border-rose-400' },
-      { bg: 'bg-indigo-50/95', border: 'border-indigo-200', tagBg: 'bg-white', tagText: 'text-indigo-600', tagBorder: 'border-indigo-200', accent: 'text-indigo-600', inputBg: 'bg-white', focusRing: 'focus:border-indigo-400' },
-      { bg: 'bg-emerald-50/95', border: 'border-emerald-200', tagBg: 'bg-white', tagText: 'text-emerald-700', tagBorder: 'border-emerald-200', accent: 'text-emerald-700', inputBg: 'bg-white', focusRing: 'focus:border-emerald-400' },
-      { bg: 'bg-amber-50/95', border: 'border-amber-200', tagBg: 'bg-white', tagText: 'text-amber-700', tagBorder: 'border-amber-200', accent: 'text-amber-700', inputBg: 'bg-white', focusRing: 'focus:border-amber-400' },
-      { bg: 'bg-violet-50/95', border: 'border-violet-200', tagBg: 'bg-white', tagText: 'text-violet-700', tagBorder: 'border-violet-200', accent: 'text-violet-700', inputBg: 'bg-white', focusRing: 'focus:border-violet-400' },
-      { bg: 'bg-teal-50/95', border: 'border-teal-200', tagBg: 'bg-white', tagText: 'text-teal-700', tagBorder: 'border-teal-200', accent: 'text-teal-700', inputBg: 'bg-white', focusRing: 'focus:border-teal-400' },
-      { bg: 'bg-sky-50/95', border: 'border-sky-200', tagBg: 'bg-white', tagText: 'text-sky-700', tagBorder: 'border-sky-200', accent: 'text-sky-700', inputBg: 'bg-white', focusRing: 'focus:border-sky-400' }
-    ];
-
-    let currentRoom = localStorage.getItem('deeptalk_room') || '';
-    let myRole = localStorage.getItem('deeptalk_role') || 'male';
-    let tempGatewayRole = myRole;
-
-    let questions = [];
-    let answers = {};
-    let localReviewOffset = 0; // Offset lokal untuk swipe down tanpa mengubah database
-    let currentMode = 'deck';
-    let unsubscribe = null;
-    let isAnimating = false;
+    // State
+    let currentUser = null;
+    let currentPairCode = null;
+    let currentActiveChatAgendaId = null;
+    let chatUnsubscribe = null;
+    let map = null;
+    let userMarker = null;
+    let partnerMarker = null;
 
     // DOM Elements
-    const roomGatewayScreen = document.getElementById('roomGatewayScreen');
-    const gatewayRoomInput = document.getElementById('gatewayRoomInput');
-    const btnGatewayMale = document.getElementById('btnGatewayMale');
-    const btnGatewayFemale = document.getElementById('btnGatewayFemale');
-    const btnEnterRoom = document.getElementById('btnEnterRoom');
-    const btnGenRoom = document.getElementById('btnGenRoom');
-    const btnExitRoom = document.getElementById('btnExitRoom');
-    const currentRoomText = document.getElementById('currentRoomText');
+    const authScreen = document.getElementById("authScreen");
+    const appScreen = document.getElementById("appScreen");
+    const authEmail = document.getElementById("authEmail");
+    const authPass = document.getElementById("authPass");
+    const authName = document.getElementById("authName");
+    const authPairCode = document.getElementById("authPairCode");
+    const authError = document.getElementById("authError");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnRegister = document.getElementById("btnRegister");
+    const btnLogout = document.getElementById("btnLogout");
 
-    const slider = document.getElementById('mainSlider');
-    const deckPanel = document.getElementById('deckPanel');
-    const deckContainer = document.getElementById('deckContainer');
-    const emptyDeck = document.getElementById('emptyDeck');
-    const hintModal = document.getElementById('hintModal');
-    const roleBadgeText = document.getElementById('roleBadgeText');
-    const roleBadgeIconWrapper = document.getElementById('roleBadgeIconWrapper');
-    const targetQuestionLabel = document.getElementById('targetQuestionLabel');
-
-    // ==========================================
-    // GATEWAY & ROOM SETUP
-    // ==========================================
-    function updateGatewayRoleButtons() {
-      if (tempGatewayRole === 'male') {
-        btnGatewayMale.className = "py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
-        btnGatewayFemale.className = "py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
-      } else {
-        btnGatewayMale.className = "py-2.5 px-3 border-2 border-slate-100 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
-        btnGatewayFemale.className = "py-2.5 px-3 border-2 border-rose-500 bg-rose-50/40 text-rose-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95";
-      }
-      lucide.createIcons();
+    // Leaflet Setup
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([-6.9175, 107.6191], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
     }
 
-    btnGatewayMale.onclick = () => { tempGatewayRole = 'male'; updateGatewayRoleButtons(); };
-    btnGatewayFemale.onclick = () => { tempGatewayRole = 'female'; updateGatewayRoleButtons(); };
-
-    btnGenRoom.onclick = () => {
-      const words = ['KITA', 'DEEPTALK', 'CERITA', 'RASA', 'IMPIAN', 'VISI'];
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      const randomNum = Math.floor(100 + Math.random() * 900);
-      gatewayRoomInput.value = `${randomWord}-${randomNum}`;
-    };
-
-    btnEnterRoom.onclick = () => {
-      const rawRoom = gatewayRoomInput.value.trim().toLowerCase();
-      if (!rawRoom) {
-        alert("Silakan masukkan atau buat nama room terlebih dahulu!");
-        return;
-      }
-
-      currentRoom = rawRoom;
-      myRole = tempGatewayRole;
-      localReviewOffset = 0;
-
-      localStorage.setItem('deeptalk_room', currentRoom);
-      localStorage.setItem('deeptalk_role', myRole);
-
-      roomGatewayScreen.style.display = 'none';
-      currentRoomText.innerText = currentRoom.toUpperCase();
-      updateRoleUI();
-
-      questions = [];
-      answers = {};
-      renderDeck();
-
-      connectRoom(currentRoom);
-    };
-
-    btnExitRoom.onclick = async () => {
-      const confirmDelete = confirm(
-        "PERINGATAN: Apakah kamu yakin ingin keluar?\n\nSemua data pertanyaan dan jawaban di room ini akan DIHAPUS PERMANEN dari database!"
-      );
-
-      if (confirmDelete) {
-        try {
-          if (unsubscribe) unsubscribe();
-
-          if (currentRoom) {
-            const docRef = doc(db, 'deeptalk_deck', currentRoom);
-            await deleteDoc(docRef);
-          }
-
-          localStorage.removeItem('deeptalk_room');
-          localStorage.removeItem('deeptalk_role');
-
-          currentRoom = '';
-          questions = [];
-          answers = {};
-          localReviewOffset = 0;
-
-          currentRoomText.innerText = '---';
-          roomGatewayScreen.style.display = 'flex';
-          gatewayRoomInput.value = '';
-          updateGatewayRoleButtons();
-          renderDeck();
-        } catch (err) {
-          console.error("Gagal menghapus data room:", err);
-          roomGatewayScreen.style.display = 'flex';
-        }
-      }
-    };
-
-    function updateRoleUI() {
-      if (myRole === 'male') {
-        roleBadgeIconWrapper.innerHTML = `<i data-lucide="user" class="w-3.5 h-3.5 text-slate-700"></i>`;
-        roleBadgeText.innerText = 'Pria';
-        targetQuestionLabel.innerText = 'Pertanyaan ini akan dijawab oleh Wanita (Dia)';
-      } else {
-        roleBadgeIconWrapper.innerHTML = `<i data-lucide="user-check" class="w-3.5 h-3.5 text-rose-500"></i>`;
-        roleBadgeText.innerText = 'Wanita';
-        targetQuestionLabel.innerText = 'Pertanyaan ini akan dijawab oleh Pria (Dia)';
-      }
-      lucide.createIcons();
-    }
-
-    document.getElementById('btnSwitchRole').onclick = () => {
-      myRole = myRole === 'male' ? 'female' : 'male';
-      localStorage.setItem('deeptalk_role', myRole);
-      updateRoleUI();
-      renderDeck();
-    };
-
-    // ==========================================
-    // ONBOARDING & NAVIGATION
-    // ==========================================
-    document.getElementById('btnCloseHint').onclick = () => {
-      localStorage.setItem('deeptalk_hint_seen', 'true');
-      hintModal.classList.add('hidden');
-      hintModal.classList.remove('flex');
-    };
-
-    document.getElementById('btnOpenHint').onclick = () => {
-      hintModal.classList.remove('hidden');
-      hintModal.classList.add('flex');
-    };
-
-    function setMode(mode) {
-      currentMode = mode;
-      if (mode === 'create') {
-        slider.style.transform = 'translateX(-50%)';
-      } else {
-        slider.style.transform = 'translateX(0%)';
-      }
-    }
-
-    // Touch Swipe Left & Right Global
-    let panelStartX = 0;
-    let panelStartY = 0;
-
-    deckPanel.addEventListener('touchstart', (e) => {
-      if (e.target.closest('.scrollable-content, textarea, input') || isAnimating) return;
-      panelStartX = e.touches[0].clientX;
-      panelStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    deckPanel.addEventListener('touchend', (e) => {
-      if (e.target.closest('.scrollable-content, textarea, input') || isAnimating) return;
-      const diffX = e.changedTouches[0].clientX - panelStartX;
-      const diffY = e.changedTouches[0].clientY - panelStartY;
-
-      if (diffX < -60 && Math.abs(diffY) < 80) {
-        setMode('create');
-      }
-    }, { passive: true });
-
-    const createPanel = document.getElementById('createPanel');
-    let createStartX = 0;
-    createPanel.addEventListener('touchstart', (e) => {
-      if (e.target.closest('.scrollable-content, textarea, input')) return;
-      createStartX = e.touches[0].clientX;
-    }, { passive: true });
-
-    createPanel.addEventListener('touchend', (e) => {
-      if (e.target.closest('.scrollable-content, textarea, input')) return;
-      const diffX = e.changedTouches[0].clientX - createStartX;
-      if (diffX > 60) {
-        setMode('deck');
-      }
-    }, { passive: true });
-
-    document.getElementById('btnBackToDeck').onclick = () => setMode('deck');
-    document.getElementById('btnEmptyAdd').onclick = () => setMode('create');
-
-    // ==========================================
-    // FIRESTORE SYNC
-    // ==========================================
-    function connectRoom(roomId) {
-      if (unsubscribe) unsubscribe();
-      currentRoom = roomId;
-
-      const docRef = doc(db, 'deeptalk_deck', currentRoom);
-      unsubscribe = onSnapshot(docRef, (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          questions = Array.isArray(data.questions) ? data.questions : [];
-          answers = data.answers || {};
-        } else {
-          questions = [];
-          answers = {};
-          saveDeck();
-        }
-        renderDeck();
-      }, (err) => {
-        console.error("Firestore error:", err);
-        renderDeck();
-      });
-    }
-
-    async function saveDeck() {
-      if (!currentRoom) return;
+    // Auth Listeners
+    btnLogin.addEventListener("click", async () => {
+      authError.textContent = "";
       try {
-        const docRef = doc(db, 'deeptalk_deck', currentRoom);
-        await setDoc(docRef, {
-          questions,
-          answers,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-      } catch (err) {
-        console.error("Gagal menyimpan:", err);
+        const cred = await signInWithEmailAndPassword(auth, authEmail.value, authPass.value);
+        if (authPairCode.value.trim()) {
+          await set(ref(db, `users/${cred.user.uid}/pairCode`), authPairCode.value.trim());
+        }
+      } catch (e) {
+        authError.textContent = e.message;
       }
-    }
+    });
 
-    // Helper: Mendapatkan view array yang disesuaikan dengan review offset lokal
-    function getDisplayQuestions() {
-      if (!questions || questions.length === 0) return [];
-      const n = questions.length;
-      const normalizedOffset = ((localReviewOffset % n) + n) % n;
-      if (normalizedOffset === 0) return questions;
-      return [...questions.slice(n - normalizedOffset), ...questions.slice(0, n - normalizedOffset)];
-    }
+    btnRegister.addEventListener("click", async () => {
+      authError.textContent = "";
+      if (!authPairCode.value.trim() || !authName.value.trim()) {
+        authError.textContent = "Nama dan Pairing Code wajib diisi!";
+        return;
+      }
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, authEmail.value, authPass.value);
+        await set(ref(db, `users/${cred.user.uid}`), {
+          name: authName.value.trim(),
+          email: authEmail.value.trim(),
+          pairCode: authPairCode.value.trim()
+        });
+      } catch (e) {
+        authError.textContent = e.message;
+      }
+    });
 
-    // ==========================================
-    // RENDER DECK
-    // ==========================================
-    function renderDeck() {
-      deckContainer.innerHTML = '';
+    btnLogout.addEventListener("click", () => signOut(auth));
 
-      if (!questions || questions.length === 0) {
-        emptyDeck.style.display = 'flex';
+    // Auth State Changed
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const snap = await get(ref(db, `users/${user.uid}`));
+        const data = snap.val() || {};
+        currentPairCode = data.pairCode || "DEFAULT";
+
+        document.getElementById("userNameLabel").textContent = data.name || user.email;
+        document.getElementById("userInitial").textContent = (data.name || user.email).charAt(0).toUpperCase();
+        document.getElementById("pairCodeLabel").textContent = currentPairCode;
+
+        authScreen.classList.add("hidden");
+        appScreen.classList.remove("hidden");
         lucide.createIcons();
-        return;
+
+        initMap();
+        syncLocation();
+        listenToAgendas();
+        listenToLocations();
+      } else {
+        currentUser = null;
+        currentPairCode = null;
+        authScreen.classList.remove("hidden");
+        appScreen.classList.add("hidden");
       }
+    });
 
-      emptyDeck.style.display = 'none';
-
-      const displayList = getDisplayQuestions();
-      const visible = displayList.slice(0, 3);
-      const partnerRole = myRole === 'male' ? 'female' : 'male';
-      const isReviewMode = (localReviewOffset % questions.length) !== 0;
-
-      visible.forEach((q, idx) => {
-        const card = document.createElement('div');
-        card.id = `card_${q.id}`;
-        
-        const colorIndex = (Math.abs(q.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) + idx) % CARD_PALETTES.length;
-        const palette = CARD_PALETTES[colorIndex];
-
-        const translateY = idx * 16;
-        const scale = 1 - (idx * 0.05);
-        const zIndex = 30 - idx;
-        const opacity = idx === 0 ? 1 : (idx === 1 ? 0.94 : 0.85);
-        const shadowClass = idx === 0 ? 'card-shadow-1' : (idx === 1 ? 'card-shadow-2' : 'card-shadow-3');
-
-        card.className = `absolute inset-0 ${palette.bg} border-2 ${palette.border} rounded-3xl p-5 ${shadowClass} flex flex-col justify-between card-transition`;
-        card.style.transform = `translateY(${translateY}px) scale(${scale})`;
-        card.style.zIndex = zIndex;
-        card.style.opacity = opacity;
-
-        const qAns = answers[q.id] || { male: '', female: '' };
-        const isFromMe = q.createdBy === myRole;
-        const answerText = isFromMe ? qAns[partnerRole] : qAns[myRole];
-
-        card.innerHTML = `
-          <!-- Header Kartu -->
-          <div class="flex items-center justify-between shrink-0 mb-1 pointer-events-auto">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              ${q.category ? `
-                <span class="text-[10px] font-bold tracking-wide uppercase px-2.5 py-0.5 ${palette.tagBg} ${palette.tagText} border ${palette.tagBorder} rounded-full shadow-sm">
-                  ${q.category}
-                </span>
-              ` : `<span class="text-[10px] font-medium text-slate-500 bg-white/70 px-2 py-0.5 rounded-full border border-slate-200">Pertanyaan Bebas</span>`}
-
-              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isFromMe ? 'bg-white/90 text-slate-700 border border-slate-200' : 'bg-rose-500 text-white shadow-sm'}">
-                ${isFromMe ? 'Pertanyaanmu' : 'Pertanyaan dari Dia'}
-              </span>
-
-              ${idx === 0 && isReviewMode ? `
-                <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-sky-100 text-sky-700 border border-sky-200 rounded-full flex items-center gap-1">
-                  <i data-lucide="history" class="w-2.5 h-2.5"></i> Review Mode
-                </span>
-              ` : ''}
-            </div>
-            <span class="text-[10px] text-slate-400 font-mono font-medium">#${q.id.slice(-4)}</span>
-          </div>
-
-          <!-- Teks Pertanyaan (Scrollable Area) -->
-          <div class="scrollable-content flex-1 my-2 pr-1 space-y-1.5">
-            <h2 class="text-base font-bold text-slate-900 leading-snug">${q.text}</h2>
-            ${q.hint ? `
-              <div class="flex items-start gap-1.5 text-xs text-slate-600 pt-0.5">
-                <i data-lucide="info" class="w-3.5 h-3.5 ${palette.accent} shrink-0 mt-0.5"></i>
-                <p class="italic">${q.hint}</p>
-              </div>
-            ` : ''}
-          </div>
-
-          <!-- Bagian Jawaban -->
-          <div class="shrink-0 pt-3 border-t ${palette.border} space-y-2">
-            ${isFromMe ? `
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Jawaban Dia</span>
-                  ${answerText ? `
-                    <span class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      <i data-lucide="check-circle-2" class="w-3 h-3"></i> Dia sudah menjawab
-                    </span>
-                  ` : `
-                    <span class="text-[10px] text-slate-500 flex items-center gap-1">
-                      <i data-lucide="clock" class="w-3 h-3"></i> Menunggu respons...
-                    </span>
-                  `}
-                </div>
-                <div class="w-full p-3 ${palette.inputBg} border ${palette.border} rounded-2xl text-slate-800 text-xs min-h-[70px] max-h-28 scrollable-content leading-relaxed select-text shadow-sm">
-                  ${answerText ? answerText : '<span class="text-slate-400 italic text-[11px]">Pasanganmu belum mengisi jawaban untuk pertanyaan ini.</span>'}
-                </div>
-                <!-- Indikator Hak Swipe Up Penanya & Hint Swipe Down -->
-                <div class="flex items-center justify-between pt-1 text-[10px] text-slate-500 font-medium">
-                  <span class="flex items-center gap-1">
-                    <i data-lucide="arrow-down" class="w-3 h-3 text-sky-600"></i> Swipe Down: Review
-                  </span>
-                  <span class="flex items-center gap-1 text-rose-600 font-semibold">
-                    Swipe Up: Lanjut <i data-lucide="arrow-up" class="w-3 h-3 text-rose-500"></i>
-                  </span>
-                </div>
-              </div>
-            ` : `
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-bold ${palette.accent} uppercase tracking-wider">Jawaban Kamu</span>
-                  ${answerText ? `
-                    <span class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      <i data-lucide="check" class="w-3 h-3"></i> Tersimpan
-                    </span>
-                  ` : `
-                    <span class="text-[10px] text-rose-600 font-semibold bg-white/80 px-2 py-0.5 rounded-full border border-rose-200">Wajib diisi</span>
-                  `}
-                </div>
-                <textarea data-role="${myRole}" data-qid="${q.id}" rows="3" placeholder="Tuliskan jawaban atau pandanganmu di sini..." class="w-full p-3 text-xs ${palette.inputBg} border ${palette.border} rounded-2xl text-slate-800 focus:outline-none ${palette.focusRing} placeholder-slate-400 scrollable-content transition shadow-sm">${answerText || ''}</textarea>
-                <!-- Indikator Pasangan -->
-                <div class="flex items-center justify-between pt-1 text-[10px] text-slate-400">
-                  <span class="flex items-center gap-1 text-sky-600 font-medium">
-                    <i data-lucide="arrow-down" class="w-3 h-3"></i> Swipe Down: Review
-                  </span>
-                  <span class="italic flex items-center gap-1">
-                    <i data-lucide="lock" class="w-3 h-3 text-slate-400"></i> Menunggu dia swipe up
-                  </span>
-                </div>
-              </div>
-            `}
-          </div>
-        `;
-
-        deckContainer.appendChild(card);
-
-        // Pasang swipe gesture vertikal pada kartu teratas
-        if (idx === 0) {
-          attachCardVerticalGestures(card, isFromMe);
-        }
-      });
-
-      // Autosave listener
-      document.querySelectorAll('textarea[data-qid]').forEach(input => {
-        input.oninput = (e) => {
-          const qId = e.target.getAttribute('data-qid');
-          const role = e.target.getAttribute('data-role');
-          if (!answers[qId]) answers[qId] = { male: '', female: '' };
-          answers[qId][role] = e.target.value;
-          
-          clearTimeout(window.saveTimer);
-          window.saveTimer = setTimeout(() => saveDeck(), 600);
-        };
-      });
-
-      lucide.createIcons();
+    // ----------------------------------------------------
+    // 2. GEOLOKASI (PELACAKAN LOKASI)
+    // ----------------------------------------------------
+    function syncLocation() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const locData = {
+              latitude,
+              longitude,
+              updatedAt: new Date().toISOString()
+            };
+            set(ref(db, `locations/${currentPairCode}/${currentUser.uid}`), locData);
+          },
+          (err) => {
+            document.getElementById("myLocInfo").textContent = "Gagal memuat GPS: " + err.message;
+          },
+          { enableHighAccuracy: true }
+        );
+      }
     }
+    document.getElementById("btnRefreshLoc").addEventListener("click", syncLocation);
 
-    // ==========================================
-    // VERTICAL GESTURES (SWIPE UP & SWIPE DOWN)
-    // ==========================================
-    function attachCardVerticalGestures(cardElement, isAuthor) {
-      let startY = 0;
-      let startX = 0;
-      let diffY = 0;
-      let diffX = 0;
-      let isDragging = false;
+    function listenToLocations() {
+      onValue(ref(db, `locations/${currentPairCode}`), (snap) => {
+        const locs = snap.val() || {};
+        const bounds = [];
 
-      cardElement.addEventListener('touchstart', (e) => {
-        // Abaikan gesture jika sentuhan berada di dalam area teks scrollable/input
-        if (e.target.closest('.scrollable-content, textarea, input') || isAnimating) return;
+        Object.keys(locs).forEach((uid) => {
+          const loc = locs[uid];
+          const isMe = uid === currentUser.uid;
+          const latlng = [loc.latitude, loc.longitude];
+          bounds.push(latlng);
 
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
-        isDragging = true;
-        cardElement.classList.remove('card-transition');
-      }, { passive: true });
-
-      cardElement.addEventListener('touchmove', (e) => {
-        if (!isDragging || isAnimating) return;
-        diffY = e.touches[0].clientY - startY;
-        diffX = e.touches[0].clientX - startX;
-
-        // Hanya translasikan jika dominan gerakan vertikal
-        if (Math.abs(diffY) > Math.abs(diffX)) {
-          cardElement.style.transform = `translateY(${diffY}px) rotate(${diffX * 0.03}deg)`;
-        }
-      }, { passive: true });
-
-      cardElement.addEventListener('touchend', () => {
-        if (!isDragging || isAnimating) return;
-        isDragging = false;
-        cardElement.classList.add('card-transition');
-
-        // GESTURE 1: SWIPE UP (Hanya untuk pembuat pertanyaan)
-        if (diffY < -75 && Math.abs(diffY) > Math.abs(diffX)) {
-          if (isAuthor) {
-            triggerCycleCardUp(cardElement);
+          if (isMe) {
+            document.getElementById("myLocInfo").innerHTML = `<b>Lokasi Saya:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)} <span class="text-[10px] text-slate-400">(${new Date(loc.updatedAt).toLocaleTimeString()})</span>`;
+            if (!userMarker) {
+              userMarker = L.marker(latlng).addTo(map).bindPopup("Saya");
+            } else {
+              userMarker.setLatLng(latlng);
+            }
           } else {
-            cardElement.style.transform = 'translate(0px, 0px)';
+            document.getElementById("partnerLocInfo").innerHTML = `<b>Lokasi Pasangan:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)} <span class="text-[10px] text-slate-400">(${new Date(loc.updatedAt).toLocaleTimeString()})</span>`;
+            if (!partnerMarker) {
+              partnerMarker = L.marker(latlng).addTo(map).bindPopup("Pasangan");
+            } else {
+              partnerMarker.setLatLng(latlng);
+            }
           }
-        }
-        // GESTURE 2: SWIPE DOWN (Review kartu sebelumnya - Lokal Sisi Klien)
-        else if (diffY > 75 && Math.abs(diffY) > Math.abs(diffX)) {
-          triggerCycleCardDown(cardElement);
-        }
-        // RESET POSISI
-        else {
-          cardElement.style.transform = 'translate(0px, 0px)';
+        });
+
+        if (bounds.length > 0) {
+          map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
         }
       });
     }
 
-    // Swipe Up: Memindahkan urutan kartu di database secara permanen
-    function triggerCycleCardUp(cardElement) {
-      if (isAnimating || questions.length === 0) return;
-      isAnimating = true;
+    // ----------------------------------------------------
+    // 3. AGENDA (DURASI TANGGAL & JAM)
+    // ----------------------------------------------------
+    document.getElementById("agendaForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("agendaTitle").value;
+      const type = document.getElementById("agendaType").value;
+      const start = document.getElementById("agendaStart").value;
+      const end = document.getElementById("agendaEnd").value;
+      const desc = document.getElementById("agendaDesc").value;
 
-      cardElement.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
-      cardElement.style.transform = 'translateY(-130dvh) scale(0.9) rotate(-8deg)';
-      cardElement.style.opacity = '0';
-
-      setTimeout(async () => {
-        // Jika sedang dalam review mode, reset offset lokal terlebih dahulu
-        localReviewOffset = 0;
-        const firstCard = questions.shift();
-        if (firstCard) {
-          questions.push(firstCard);
-        }
-        await saveDeck();
-        isAnimating = false;
-      }, 260);
-    }
-
-    // Swipe Down: Menampilkan kartu sebelumnya secara LOKAL (tanpa mengubah database Firestore)
-    function triggerCycleCardDown(cardElement) {
-      if (isAnimating || questions.length <= 1) return;
-      isAnimating = true;
-
-      cardElement.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
-      cardElement.style.transform = 'translateY(130dvh) scale(0.9) rotate(8deg)';
-      cardElement.style.opacity = '0';
-
-      setTimeout(() => {
-        // Tambahkan offset lokal (mundur 1 kartu di memori browser ini saja)
-        localReviewOffset = (localReviewOffset + 1) % questions.length;
-        renderDeck();
-        isAnimating = false;
-      }, 260);
-    }
-
-    // Submit Pertanyaan Baru
-    document.getElementById('btnSubmitQuestion').onclick = async () => {
-      const category = document.getElementById('inputCategory').value.trim();
-      const text = document.getElementById('inputText').value.trim();
-      const hint = document.getElementById('inputHint').value.trim();
-
-      if (!text) {
-        alert("Pertanyaan tidak boleh kosong!");
+      if (new Date(start) >= new Date(end)) {
+        alert("Waktu selesai harus lebih besar dari waktu mulai!");
         return;
       }
 
-      const newQ = {
-        id: 'q_' + Date.now(),
-        category: category || null,
-        createdBy: myRole,
-        text,
-        hint: hint || null
-      };
+      const agendaRef = push(ref(db, `agendas/${currentPairCode}`));
+      await set(agendaRef, {
+        title,
+        type,
+        start,
+        end,
+        desc,
+        createdBy: currentUser.uid,
+        createdByName: document.getElementById("userNameLabel").textContent,
+        createdAt: serverTimestamp()
+      });
 
-      // Reset review offset saat ada pertanyaan baru
-      localReviewOffset = 0;
-      questions.unshift(newQ);
-      await saveDeck();
+      document.getElementById("agendaForm").reset();
+    });
 
-      document.getElementById('inputCategory').value = '';
-      document.getElementById('inputText').value = '';
-      document.getElementById('inputHint').value = '';
-      setMode('deck');
-    };
+    function calculateDuration(startStr, endStr) {
+      const s = new Date(startStr);
+      const e = new Date(endStr);
+      const diffMs = e - s;
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const days = Math.floor(diffHrs / 24);
+      const remHrs = diffHrs % 24;
 
-    // ==========================================
-    // INITIALIZATION RUNNER
-    // ==========================================
-    if (currentRoom) {
-      roomGatewayScreen.style.display = 'none';
-      updateRoleUI();
-      currentRoomText.innerText = currentRoom.toUpperCase();
-      renderDeck();
-      connectRoom(currentRoom);
-    } else {
-      roomGatewayScreen.style.display = 'flex';
-      updateGatewayRoleButtons();
+      if (days > 0) {
+        return `${days} hari ${remHrs} jam`;
+      }
+      return `${diffHrs} jam ${diffMins} mnt`;
     }
+
+    function listenToAgendas() {
+      onValue(ref(db, `agendas/${currentPairCode}`), (snap) => {
+        const agendas = snap.val() || {};
+        const listEl = document.getElementById("agendaList");
+        listEl.innerHTML = "";
+
+        const keys = Object.keys(agendas);
+        let visibleCount = 0;
+
+        keys.sort((a, b) => new Date(agendas[a].start) - new Date(agendas[b].start));
+
+        keys.forEach((id) => {
+          const item = agendas[id];
+          const isPrivate = item.type === "private";
+          const isMine = item.createdBy === currentUser.uid;
+
+          // Filter agenda: jika private dan bukan milik user, jangan tampilkan
+          if (isPrivate && !isMine) return;
+          visibleCount++;
+
+          const durationText = calculateDuration(item.start, item.end);
+          const startDate = new Date(item.start).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+          const endDate = new Date(item.end).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+
+          const card = document.createElement("div");
+          card.className = `rounded-xl border p-4 transition ${
+            isPrivate ? 'bg-amber-50/50 border-amber-200' : 'bg-white border-slate-200 hover:border-slate-300'
+          } shadow-sm`;
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs px-2 py-0.5 rounded-md font-medium ${
+                    isPrivate ? 'bg-amber-200 text-amber-900' : 'bg-indigo-100 text-indigo-800'
+                  }">
+                    ${isPrivate ? 'Pribadi' : 'Berdua'}
+                  </span>
+                  <h4 class="font-bold text-slate-900 text-sm md:text-base">${item.title}</h4>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">${item.desc || 'Tidak ada catatan tambahan'}</p>
+              </div>
+              <button data-chat-id="${id}" data-chat-title="${item.title}" class="btn-open-chat rounded-lg bg-slate-100 hover:bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition">
+                <i data-lucide="message-square" class="h-3.5 w-3.5"></i>
+                Chat
+              </button>
+            </div>
+
+            <!-- Detail Durasi & Waktu -->
+            <div class="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-600">
+              <div><span class="text-slate-400 block text-[10px] uppercase">Mulai</span> ${startDate}</div>
+              <div><span class="text-slate-400 block text-[10px] uppercase">Selesai</span> ${endDate}</div>
+              <div><span class="text-slate-400 block text-[10px] uppercase">Total Durasi</span> <b class="text-slate-800">${durationText}</b></div>
+            </div>
+          `;
+          listEl.appendChild(card);
+        });
+
+        document.getElementById("agendaCount").textContent = `${visibleCount} Agenda`;
+        lucide.createIcons();
+
+        document.querySelectorAll(".btn-open-chat").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            openChatModal(btn.dataset.chatId, btn.dataset.chatTitle);
+          });
+        });
+      });
+    }
+
+    // ----------------------------------------------------
+    // 4. CHAT ROOM PER AGENDA
+    // ----------------------------------------------------
+    const chatModal = document.getElementById("chatModal");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+
+    function openChatModal(agendaId, agendaTitle) {
+      currentActiveChatAgendaId = agendaId;
+      document.getElementById("chatModalTitle").textContent = agendaTitle;
+      document.getElementById("chatModalSubtitle").textContent = `Chat Room Agenda #${agendaId.slice(-4)}`;
+      chatModal.classList.remove("hidden");
+      lucide.createIcons();
+
+      // Listen chat
+      const chatRef = ref(db, `chats/${currentPairCode}/${agendaId}`);
+      onValue(chatRef, (snap) => {
+        const msgs = snap.val() || {};
+        chatMessages.innerHTML = "";
+        const keys = Object.keys(msgs);
+
+        if (keys.length === 0) {
+          chatMessages.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada diskusi di agenda ini.</p>`;
+          return;
+        }
+
+        keys.forEach((k) => {
+          const msg = msgs[k];
+          const isMine = msg.senderId === currentUser.uid;
+          const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          const bubble = document.createElement("div");
+          bubble.className = `flex flex-col ${isMine ? 'items-end' : 'items-start'}`;
+          bubble.innerHTML = `
+            <span class="text-[10px] text-slate-400 mb-0.5 px-1">${msg.senderName}</span>
+            <div class="max-w-[75%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+              isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'
+            }">
+              ${msg.text}
+            </div>
+            <span class="text-[9px] text-slate-400 mt-0.5 px-1">${time}</span>
+          `;
+          chatMessages.appendChild(bubble);
+        });
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+
+    document.getElementById("btnCloseChat").addEventListener("click", () => {
+      chatModal.classList.add("hidden");
+      currentActiveChatAgendaId = null;
+    });
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text || !currentActiveChatAgendaId) return;
+
+      const chatRef = push(ref(db, `chats/${currentPairCode}/${currentActiveChatAgendaId}`));
+      await set(chatRef, {
+        senderId: currentUser.uid,
+        senderName: document.getElementById("userNameLabel").textContent,
+        text,
+        timestamp: new Date().toISOString()
+      });
+
+      chatInput.value = "";
+    });
+
   </script>
 </body>
 </html>
