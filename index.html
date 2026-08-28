@@ -31,7 +31,7 @@
     <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 p-8 shadow-md">
       <div class="text-center mb-6">
         <h1 class="text-2xl font-bold tracking-tight text-slate-900">CoupleSync</h1>
-        <p class="text-xs text-slate-500 mt-1">Isi profil singkat untuk berbagi kalender & lokasi dengan pasangan</p>
+        <p class="text-xs text-slate-500 mt-1">Isi profil singkat untuk berbagi kalender, lokasi & chat dengan pasangan</p>
       </div>
 
       <form id="joinForm" class="space-y-4">
@@ -62,6 +62,929 @@
           Buka Kalender Bersama
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP SCREEN -->
+  <div id="appScreen" class="hidden max-w-6xl mx-auto px-4 pt-6 space-y-6">
+
+    <!-- Top Header -->
+    <header class="glass-card rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div id="userAvatar" class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white">U</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-slate-900" id="headerUserName">Nama</h2>
+            <span id="headerGenderBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold"></span>
+          </div>
+          <p class="text-xs text-slate-500 flex items-center gap-1">
+            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Pair Code: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnEnableNotif" title="Aktifkan Notifikasi" class="rounded-lg border border-slate-200 bg-white p-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i data-lucide="bell" class="h-4 w-4"></i>
+          <span class="hidden sm:inline">Notifikasi</span>
+        </button>
+        <button id="btnOpenAddModal" class="rounded-lg bg-slate-900 text-white px-3.5 py-2 text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="plus" class="h-4 w-4"></i> Tambah Agenda
+        </button>
+        <button id="btnSwitchAccount" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">
+          Ganti Profil
+        </button>
+      </div>
+    </header>
+
+    <!-- Location Card (Peta Leaflet) -->
+    <section class="glass-card rounded-2xl border border-slate-200 p-4 shadow-sm space-y-2">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="h-4 w-4 text-slate-600"></i>
+          Live Lokasi Pasangan
+        </h3>
+        <button id="btnUpdateLocation" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
+          <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Refresh Lokasi Saya
+        </button>
+      </div>
+      <div id="map"></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
+        <div id="myLocInfo" class="rounded-lg bg-slate-50 p-2 border border-slate-200/60">Lokasi Saya: Memuat GPS...</div>
+        <div id="partnerLocInfo" class="rounded-lg bg-slate-50 p-2 border border-slate-200/60">Lokasi Pasangan: Menunggu data pasangan...</div>
+      </div>
+    </section>
+
+    <!-- KALENDER 1 BULAN & DETAIL HARIAN -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Kolom Kiri: Kalender 1 Bulan Penuh -->
+      <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-7 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <h3 id="currentMonthYearLabel" class="text-base font-bold text-slate-900">Bulan Tahun</h3>
+          <div class="flex items-center gap-1">
+            <button id="btnPrevMonth" class="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-100">
+              <i data-lucide="chevron-left" class="h-4 w-4"></i>
+            </button>
+            <button id="btnTodayMonth" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">
+              Hari Ini
+            </button>
+            <button id="btnNextMonth" class="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-100">
+              <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
+        </div>
+
+        <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-sm">
+          <!-- Render Hari/Tanggal via JS -->
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-indigo-500"></span> Agenda Berdua
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Agenda Pribadi Saya
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-amber-500"></span> Agenda Pribadi Pasangan
+          </div>
+        </div>
+      </section>
+
+      <!-- Kolom Kanan: Detail Agenda & Jam pada Tanggal yang Dipilih -->
+      <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-5 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Agenda Tanggal</p>
+              <h4 id="selectedDateTitle" class="text-base font-bold text-slate-900">Pilih Tanggal</h4>
+            </div>
+            <span id="selectedDayCount" class="text-xs rounded-full bg-slate-200 px-2.5 py-0.5 font-medium text-slate-700">0 Jadwal</span>
+          </div>
+
+          <div id="dayAgendaList" class="space-y-3 pt-3 max-h-[420px] overflow-y-auto pr-1">
+            <p class="text-xs text-slate-400 text-center py-10">Klik tanggal pada kalender untuk melihat jam dan detail agenda.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- MODAL FORM AGENDA (CREATE & UPDATE) -->
+  <div id="agendaModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h4 id="agendaModalTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="calendar-plus" class="h-4 w-4 text-slate-700"></i>
+          Tambah Agenda Baru
+        </h4>
+        <button id="btnCloseAgendaModal" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <form id="agendaForm" class="space-y-3.5">
+        <input id="editAgendaId" type="hidden" value="" />
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Judul Agenda</label>
+          <input id="agendaTitle" type="text" required placeholder="Contoh: Kuliah / Meeting / Dinner" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Sifat Agenda</label>
+          <select id="agendaType" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none bg-white">
+            <option value="couple">Agenda Berdua (Kegiatan Bersama)</option>
+            <option value="private">Agenda Pribadi (Biar Pasangan Tahu Jadwal Saya)</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Mulai (Tanggal & Jam)</label>
+            <input id="agendaStart" type="datetime-local" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-slate-800 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Selesai (Tanggal & Jam)</label>
+            <input id="agendaEnd" type="datetime-local" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs focus:border-slate-800 focus:outline-none" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Catatan / Lokasi</label>
+          <textarea id="agendaDesc" rows="2" placeholder="Catatan tempat, perlengkapan, dsb..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-800 focus:outline-none"></textarea>
+        </div>
+        <button id="btnSubmitAgenda" type="submit" class="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">Simpan Agenda</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CHAT ROOM PER AGENDA -->
+  <div id="chatModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl flex flex-col h-[520px]">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div>
+          <h4 id="chatModalTitle" class="text-base font-bold text-slate-900">Ruang Obrolan</h4>
+          <p id="chatModalSubtitle" class="text-xs text-slate-500">Diskusi seputar agenda</p>
+        </div>
+        <button id="btnCloseChat" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <div id="chatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm">
+        <p class="text-xs text-slate-400 text-center py-6">Belum ada obrolan.</p>
+      </div>
+
+      <form id="chatForm" class="flex gap-2 pt-3 border-t border-slate-200">
+        <input id="chatInput" type="text" required placeholder="Tulis pesan..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+        <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition flex items-center gap-1">
+          <i data-lucide="send" class="h-4 w-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FIREBASE MODULAR SDK + FCM -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      collection, 
+      addDoc, 
+      updateDoc, 
+      deleteDoc, 
+      query, 
+      where, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { 
+      getMessaging, 
+      getToken, 
+      onMessage 
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js";
+
+    // ----------------------------------------------------
+    // Konfigurasi Project Firebase & VAPID Key
+    // ----------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5qI-YCwJK9Xj5Fci7vIArFMetj1ZP2_w",
+      authDomain: "ceritaberdua-9f71d.firebaseapp.com",
+      projectId: "ceritaberdua-9f71d",
+      storageBucket: "ceritaberdua-9f71d.firebasestorage.app",
+      messagingSenderId: "1044481677281",
+      appId: "1:1044481677281:web:9f420eb6da603e99fa24a0",
+      measurementId: "G-NR86918PVB"
+    };
+
+    const VAPID_KEY = "BLfCjPLFGD4QivQO2nBJLQ5cQolK4dCdgepAda8IfTr5Q495iMxhIykCOxIucHLmEXKAIJnv9HCySv3nVReeKGY";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let messaging = null;
+
+    try {
+      messaging = getMessaging(app);
+    } catch (e) {
+      console.warn("FCM tidak didukung di environment ini:", e);
+    }
+
+    // State Aplikasi
+    let userProfile = JSON.parse(localStorage.getItem("couple_user_profile")) || null;
+    let allAgendas = [];
+    let currentViewingDate = new Date();
+    let selectedDateStr = new Date().toISOString().split('T')[0];
+    let currentActiveChatAgendaId = null;
+    let chatUnsubscribe = null;
+    let map = null;
+    let markers = {};
+
+    function getOrCreateDeviceId() {
+      let devId = localStorage.getItem("couple_device_id");
+      if (!devId) {
+        devId = "user_" + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem("couple_device_id", devId);
+      }
+      return devId;
+    }
+    const deviceId = getOrCreateDeviceId();
+
+    const joinScreen = document.getElementById("joinScreen");
+    const appScreen = document.getElementById("appScreen");
+    const agendaModal = document.getElementById("agendaModal");
+
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([-6.9175, 107.6191], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    }
+
+    // Sound Beep Notifikasi In-App
+    function playNotificationTone() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 587.33; // Nada D5
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (err) {}
+    }
+
+    // Registrasi Push Notification Service Worker & FCM Token
+    async function setupPushNotifications() {
+      if (!messaging || !('serviceWorker' in navigator)) return;
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+          const currentToken = await getToken(messaging, {
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: registration
+          });
+
+          if (currentToken && userProfile) {
+            await setDoc(doc(db, "users", userProfile.uid), {
+              fcmToken: currentToken,
+              name: userProfile.name,
+              pairCode: userProfile.pairCode,
+              updatedAt: serverTimestamp()
+            }, { merge: true });
+          }
+        }
+      } catch (err) {
+        console.warn("Registrasi FCM gagal:", err);
+      }
+    }
+
+    document.getElementById("btnEnableNotif").addEventListener("click", () => {
+      setupPushNotifications().then(() => alert("Notifikasi sistem aktif!"));
+    });
+
+    if (messaging) {
+      onMessage(messaging, (payload) => {
+        playNotificationTone();
+        if (Notification.permission === 'granted') {
+          new Notification(payload.notification?.title || "CoupleSync", {
+            body: payload.notification?.body || "Pesan baru dari pasangan",
+            icon: 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png'
+          });
+        }
+      });
+    }
+
+    if (userProfile && userProfile.pairCode) {
+      loadMainApp();
+    } else {
+      joinScreen.classList.remove("hidden");
+      appScreen.classList.add("hidden");
+    }
+
+    document.getElementById("joinForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("inputName").value.trim();
+      const gender = document.querySelector('input[name="gender"]:checked').value;
+      const pairCode = document.getElementById("inputPairCode").value.trim().toUpperCase();
+
+      if (!name || !pairCode) return;
+      userProfile = { uid: deviceId, name, gender, pairCode };
+      localStorage.setItem("couple_user_profile", JSON.stringify(userProfile));
+      loadMainApp();
+    });
+
+    document.getElementById("btnSwitchAccount").addEventListener("click", () => {
+      if (confirm("Ganti profil atau Pairing Code?")) {
+        localStorage.removeItem("couple_user_profile");
+        location.reload();
+      }
+    });
+
+    function loadMainApp() {
+      joinScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+
+      document.getElementById("headerUserName").textContent = userProfile.name;
+      document.getElementById("headerPairCode").textContent = userProfile.pairCode;
+
+      const avatar = document.getElementById("userAvatar");
+      const badge = document.getElementById("headerGenderBadge");
+
+      if (userProfile.gender === "female") {
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-rose-500";
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-700";
+        badge.textContent = "👩 Perempuan";
+      } else {
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-blue-600";
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700";
+        badge.textContent = "👨 Laki-laki";
+      }
+      avatar.textContent = userProfile.name.charAt(0).toUpperCase();
+
+      lucide.createIcons();
+      initMap();
+      syncLocation();
+      listenToLocations();
+      listenToAgendas();
+      renderCalendar();
+      renderSelectedDayAgendas();
+      setupPushNotifications();
+    }
+
+    // Modal Create Trigger
+    document.getElementById("btnOpenAddModal").addEventListener("click", () => {
+      document.getElementById("editAgendaId").value = "";
+      document.getElementById("agendaModalTitle").innerHTML = `<i data-lucide="calendar-plus" class="h-4 w-4 text-slate-700"></i> Tambah Agenda Baru`;
+      document.getElementById("btnSubmitAgenda").textContent = "Simpan Agenda";
+      
+      const defaultStart = `${selectedDateStr}T09:00`;
+      const defaultEnd = `${selectedDateStr}T11:00`;
+      document.getElementById("agendaForm").reset();
+      document.getElementById("agendaStart").value = defaultStart;
+      document.getElementById("agendaEnd").value = defaultEnd;
+      document.getElementById("editAgendaId").value = "";
+
+      agendaModal.classList.remove("hidden");
+      lucide.createIcons();
+    });
+
+    document.getElementById("btnCloseAgendaModal").addEventListener("click", () => {
+      agendaModal.classList.add("hidden");
+    });
+
+    // ----------------------------------------------------
+    // GEOLOKASI (Realtime Firestore)
+    // ----------------------------------------------------
+    function syncLocation() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            await setDoc(doc(db, "locations", `${userProfile.pairCode}_${userProfile.uid}`), {
+              uid: userProfile.uid,
+              name: userProfile.name,
+              gender: userProfile.gender,
+              pairCode: userProfile.pairCode,
+              latitude,
+              longitude,
+              updatedAt: serverTimestamp()
+            }, { merge: true });
+          },
+          (err) => {
+            document.getElementById("myLocInfo").textContent = "GPS tidak aktif / diblokir";
+          },
+          { enableHighAccuracy: true }
+        );
+      }
+    }
+    document.getElementById("btnUpdateLocation").addEventListener("click", syncLocation);
+
+    function listenToLocations() {
+      const q = query(collection(db, "locations"), where("pairCode", "==", userProfile.pairCode));
+      onSnapshot(q, (snapshot) => {
+        const bounds = [];
+        let foundPartner = false;
+
+        snapshot.forEach((docSnap) => {
+          const loc = docSnap.data();
+          if (!loc.latitude || !loc.longitude) return;
+
+          const isMe = loc.uid === userProfile.uid;
+          const latlng = [loc.latitude, loc.longitude];
+          bounds.push(latlng);
+
+          const iconColor = loc.gender === 'female' ? '#f43f5e' : '#2563eb';
+
+          if (isMe) {
+            document.getElementById("myLocInfo").innerHTML = `<b>Lokasi Saya:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+          } else {
+            foundPartner = true;
+            document.getElementById("partnerLocInfo").innerHTML = `<b>Lokasi ${loc.name}:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+          }
+
+          if (!markers[loc.uid]) {
+            markers[loc.uid] = L.circleMarker(latlng, {
+              radius: 9,
+              fillColor: iconColor,
+              color: "#ffffff",
+              weight: 2,
+              fillOpacity: 0.9
+            }).addTo(map).bindPopup(`<b>${loc.name}</b> (${loc.gender === 'female' ? 'Perempuan' : 'Laki-laki'})`);
+          } else {
+            markers[loc.uid].setLatLng(latlng);
+          }
+        });
+
+        if (!foundPartner) {
+          document.getElementById("partnerLocInfo").textContent = "Menunggu pasangan membuka web...";
+        }
+
+        if (bounds.length > 0) {
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // LOGIKA KALENDER 1 BULAN
+    // ----------------------------------------------------
+    document.getElementById("btnPrevMonth").addEventListener("click", () => {
+      currentViewingDate.setMonth(currentViewingDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    document.getElementById("btnNextMonth").addEventListener("click", () => {
+      currentViewingDate.setMonth(currentViewingDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    document.getElementById("btnTodayMonth").addEventListener("click", () => {
+      currentViewingDate = new Date();
+      selectedDateStr = new Date().toISOString().split('T')[0];
+      renderCalendar();
+      renderSelectedDayAgendas();
+    });
+
+    function renderCalendar() {
+      const year = currentViewingDate.getFullYear();
+      const month = currentViewingDate.getMonth();
+
+      const monthNames = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      document.getElementById("currentMonthYearLabel").textContent = `${monthNames[month]} ${year}`;
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+
+      const gridEl = document.getElementById("calendarGrid");
+      gridEl.innerHTML = "";
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      for (let x = firstDayIndex; x > 0; x--) {
+        const dayNum = prevMonthDays - x + 1;
+        const cell = document.createElement("div");
+        cell.className = "h-16 md:h-20 p-1 border border-slate-100 rounded-lg bg-slate-50/50 text-slate-300 select-none text-xs";
+        cell.innerHTML = `<span>${dayNum}</span>`;
+        gridEl.appendChild(cell);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const formattedDay = String(day).padStart(2, '0');
+        const formattedMonth = String(month + 1).padStart(2, '0');
+        const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
+
+        const isToday = dateStr === todayStr;
+        const isSelected = dateStr === selectedDateStr;
+
+        const dayEvents = allAgendas.filter(a => {
+          const aStart = a.start.split('T')[0];
+          const aEnd = a.end.split('T')[0];
+          return dateStr >= aStart && dateStr <= aEnd;
+        });
+
+        const cell = document.createElement("div");
+        cell.className = `h-16 md:h-20 p-1.5 border rounded-xl cursor-pointer transition flex flex-col justify-between text-xs ${
+          isSelected 
+            ? 'border-slate-900 bg-slate-900 text-white shadow-sm' 
+            : isToday 
+              ? 'border-indigo-400 bg-indigo-50/40 text-indigo-900 font-bold hover:bg-slate-50' 
+              : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50'
+        }`;
+
+        let badgesHtml = '<div class="space-y-1 overflow-hidden">';
+        dayEvents.slice(0, 2).forEach(ev => {
+          const isPrivate = ev.type === 'private';
+          const isMine = ev.createdBy === userProfile.uid;
+
+          let badgeStyle = '';
+          if (isSelected) {
+            badgeStyle = isPrivate ? (isMine ? 'bg-emerald-400 text-slate-900' : 'bg-amber-400 text-slate-900') : 'bg-indigo-400 text-slate-900';
+          } else {
+            if (!isPrivate) {
+              badgeStyle = 'bg-indigo-100 text-indigo-900 border border-indigo-200';
+            } else if (isMine) {
+              badgeStyle = 'bg-emerald-100 text-emerald-900 border border-emerald-200';
+            } else {
+              badgeStyle = 'bg-amber-100 text-amber-900 border border-amber-200';
+            }
+          }
+
+          badgesHtml += `
+            <div class="truncate text-[9px] px-1 py-0.5 rounded font-medium ${badgeStyle}">
+              ${ev.title}
+            </div>
+          `;
+        });
+        if (dayEvents.length > 2) {
+          badgesHtml += `<div class="text-[8px] opacity-70">+${dayEvents.length - 2} lainnya</div>`;
+        }
+        badgesHtml += '</div>';
+
+        cell.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-xs ${isToday && !isSelected ? 'text-indigo-600 font-extrabold' : ''}">${day}</span>
+            ${dayEvents.length > 0 && !isSelected ? `<span class="h-1.5 w-1.5 rounded-full ${dayEvents.some(d => d.type === 'couple') ? 'bg-indigo-600' : (dayEvents.some(d => d.createdBy === userProfile.uid) ? 'bg-emerald-500' : 'bg-amber-500')}"></span>` : ''}
+          </div>
+          ${badgesHtml}
+        `;
+
+        cell.addEventListener("click", () => {
+          selectedDateStr = dateStr;
+          renderCalendar();
+          renderSelectedDayAgendas();
+        });
+
+        gridEl.appendChild(cell);
+      }
+    }
+
+    // ----------------------------------------------------
+    // DETAIL AGENDA & CRUD LENGKAP
+    // ----------------------------------------------------
+    function calculateDuration(startStr, endStr) {
+      const s = new Date(startStr);
+      const e = new Date(endStr);
+      const diffMs = e - s;
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const days = Math.floor(diffHrs / 24);
+      const remHrs = diffHrs % 24;
+
+      if (days > 0) return `${days} hari ${remHrs} jam`;
+      return `${diffHrs} jam ${diffMins} mnt`;
+    }
+
+    function renderSelectedDayAgendas() {
+      const listEl = document.getElementById("dayAgendaList");
+      const titleEl = document.getElementById("selectedDateTitle");
+      const countEl = document.getElementById("selectedDayCount");
+
+      const dateObj = new Date(selectedDateStr + "T00:00:00");
+      const formattedTitle = dateObj.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+      titleEl.textContent = formattedTitle;
+
+      const dayEvents = allAgendas.filter(a => {
+        const aStart = a.start.split('T')[0];
+        const aEnd = a.end.split('T')[0];
+        return selectedDateStr >= aStart && selectedDateStr <= aEnd;
+      });
+
+      countEl.textContent = `${dayEvents.length} Jadwal`;
+      listEl.innerHTML = "";
+
+      if (dayEvents.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-12 space-y-2">
+            <p class="text-xs text-slate-400">Tidak ada agenda pada tanggal ini.</p>
+            <button id="btnQuickAdd" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+              + Buat Agenda untuk Tanggal Ini
+            </button>
+          </div>
+        `;
+        document.getElementById("btnQuickAdd")?.addEventListener("click", () => {
+          document.getElementById("btnOpenAddModal").click();
+        });
+        return;
+      }
+
+      dayEvents.forEach((item) => {
+        const isPrivate = item.type === "private";
+        const isMine = item.createdBy === userProfile.uid;
+        const durationText = calculateDuration(item.start, item.end);
+
+        const startTime = new Date(item.start).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
+        const endTime = new Date(item.end).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
+
+        let badgeLabel = '';
+        let badgeClass = '';
+        let cardBgClass = '';
+
+        if (!isPrivate) {
+          badgeLabel = 'Agenda Berdua';
+          badgeClass = 'bg-indigo-100 text-indigo-800 border border-indigo-200';
+          cardBgClass = 'bg-white border-slate-200 hover:border-slate-300';
+        } else if (isMine) {
+          badgeLabel = `Pribadi (Saya)`;
+          badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+          cardBgClass = 'bg-emerald-50/40 border-emerald-200';
+        } else {
+          badgeLabel = `Pribadi (${item.createdByName || 'Pasangan'})`;
+          badgeClass = 'bg-amber-100 text-amber-900 border border-amber-200';
+          cardBgClass = 'bg-amber-50/50 border-amber-200';
+        }
+
+        const creatorActionsHtml = isMine ? `
+          <div class="flex items-center gap-1">
+            <button data-edit-id="${item.id}" title="Edit Agenda" class="btn-edit-agenda p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition">
+              <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+            </button>
+            <button data-delete-id="${item.id}" data-delete-title="${item.title}" title="Hapus Agenda" class="btn-delete-agenda p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition">
+              <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+            </button>
+          </div>
+        ` : '';
+
+        const card = document.createElement("div");
+        card.className = `rounded-xl border p-4 transition shadow-sm ${cardBgClass}`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${badgeClass}">
+                  ${badgeLabel}
+                </span>
+                <h4 class="font-bold text-slate-900 text-sm">${item.title}</h4>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">${item.desc || 'Tidak ada catatan tambahan'}</p>
+            </div>
+            
+            <div class="flex items-center gap-1.5">
+              ${creatorActionsHtml}
+              <button data-chat-id="${item.id}" data-chat-title="${item.title}" class="btn-open-chat rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 flex items-center gap-1.5 transition">
+                <i data-lucide="message-square" class="h-3.5 w-3.5"></i>
+                Chat
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 bg-slate-50/70 p-2 rounded-lg">
+            <div class="flex items-center gap-1.5 font-medium">
+              <i data-lucide="clock" class="h-3.5 w-3.5 text-slate-500"></i>
+              <span>${startTime} - ${endTime}</span>
+            </div>
+            <div class="text-[11px] font-semibold text-slate-800">
+              Durasi: ${durationText}
+            </div>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+
+      lucide.createIcons();
+
+      document.querySelectorAll(".btn-open-chat").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          openChatModal(btn.dataset.chatId, btn.dataset.chatTitle);
+        });
+      });
+
+      document.querySelectorAll(".btn-edit-agenda").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const agendaId = btn.dataset.editId;
+          const item = allAgendas.find(a => a.id === agendaId);
+          if (!item) return;
+
+          document.getElementById("editAgendaId").value = item.id;
+          document.getElementById("agendaTitle").value = item.title;
+          document.getElementById("agendaType").value = item.type;
+          document.getElementById("agendaStart").value = item.start;
+          document.getElementById("agendaEnd").value = item.end;
+          document.getElementById("agendaDesc").value = item.desc || "";
+
+          document.getElementById("agendaModalTitle").innerHTML = `<i data-lucide="edit-3" class="h-4 w-4 text-slate-700"></i> Edit Agenda`;
+          document.getElementById("btnSubmitAgenda").textContent = "Update Perubahan";
+
+          agendaModal.classList.remove("hidden");
+          lucide.createIcons();
+        });
+      });
+
+      document.querySelectorAll(".btn-delete-agenda").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const agendaId = btn.dataset.deleteId;
+          const title = btn.dataset.deleteTitle;
+          if (confirm(`Yakin ingin menghapus agenda "${title}"?`)) {
+            try {
+              await deleteDoc(doc(db, "agendas", agendaId));
+            } catch (err) {
+              alert("Gagal menghapus: " + err.message);
+            }
+          }
+        });
+      });
+    }
+
+    // ----------------------------------------------------
+    // FIRESTORE AGENDA LISTENER
+    // ----------------------------------------------------
+    function listenToAgendas() {
+      const q = query(
+        collection(db, "agendas"),
+        where("pairCode", "==", userProfile.pairCode)
+      );
+
+      onSnapshot(q, (snapshot) => {
+        allAgendas = [];
+        snapshot.forEach((docSnap) => {
+          allAgendas.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        allAgendas.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        renderCalendar();
+        renderSelectedDayAgendas();
+      }, (err) => {
+        console.error("Firestore Agenda Error:", err);
+      });
+    }
+
+    document.getElementById("agendaForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById("editAgendaId").value;
+      const title = document.getElementById("agendaTitle").value;
+      const type = document.getElementById("agendaType").value;
+      const start = document.getElementById("agendaStart").value;
+      const end = document.getElementById("agendaEnd").value;
+      const desc = document.getElementById("agendaDesc").value;
+
+      if (new Date(start) >= new Date(end)) {
+        alert("Waktu selesai harus setelah waktu mulai!");
+        return;
+      }
+
+      if (editId) {
+        await updateDoc(doc(db, "agendas", editId), {
+          title,
+          type,
+          start,
+          end,
+          desc,
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        await addDoc(collection(db, "agendas"), {
+          title,
+          type,
+          start,
+          end,
+          desc,
+          pairCode: userProfile.pairCode,
+          createdBy: userProfile.uid,
+          createdByName: userProfile.name,
+          createdGender: userProfile.gender,
+          createdAt: serverTimestamp()
+        });
+      }
+
+      document.getElementById("agendaForm").reset();
+      document.getElementById("editAgendaId").value = "";
+      agendaModal.classList.add("hidden");
+    });
+
+    // ----------------------------------------------------
+    // CHAT ROOM PER AGENDA
+    // ----------------------------------------------------
+    const chatModal = document.getElementById("chatModal");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+
+    function openChatModal(agendaId, agendaTitle) {
+      currentActiveChatAgendaId = agendaId;
+      document.getElementById("chatModalTitle").textContent = agendaTitle;
+      document.getElementById("chatModalSubtitle").textContent = `Chat Room Agenda #${agendaId.slice(-4)}`;
+      chatModal.classList.remove("hidden");
+      lucide.createIcons();
+
+      if (chatUnsubscribe) chatUnsubscribe();
+
+      const chatsQuery = collection(db, "agendas", agendaId, "chats");
+
+      chatUnsubscribe = onSnapshot(chatsQuery, (snapshot) => {
+        chatMessages.innerHTML = "";
+        const msgs = [];
+
+        snapshot.forEach((docSnap) => {
+          msgs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        msgs.sort((a, b) => {
+          const tA = a.timestamp?.seconds || 0;
+          const tB = b.timestamp?.seconds || 0;
+          return tA - tB;
+        });
+
+        if (msgs.length === 0) {
+          chatMessages.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada obrolan di agenda ini.</p>`;
+          return;
+        }
+
+        // Bunyikan nada jika ada pesan baru dari pasangan saat modal terbuka
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg && lastMsg.senderId !== userProfile.uid) {
+          playNotificationTone();
+        }
+
+        msgs.forEach((msg) => {
+          const isMine = msg.senderId === userProfile.uid;
+          const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+          const bubble = document.createElement("div");
+          bubble.className = `flex flex-col ${isMine ? 'items-end' : 'items-start'}`;
+          bubble.innerHTML = `
+            <span class="text-[10px] text-slate-400 mb-0.5 px-1">${msg.senderName} (${msg.senderGender === 'female' ? '👩' : '👨'})</span>
+            <div class="max-w-[75%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+              isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'
+            }">
+              ${msg.text}
+            </div>
+            <span class="text-[9px] text-slate-400 mt-0.5 px-1">${time}</span>
+          `;
+          chatMessages.appendChild(bubble);
+        });
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+
+    document.getElementById("btnCloseChat").addEventListener("click", () => {
+      chatModal.classList.add("hidden");
+      currentActiveChatAgendaId = null;
+      if (chatUnsubscribe) chatUnsubscribe();
+    });
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text || !currentActiveChatAgendaId) return;
+
+      await addDoc(collection(db, "agendas", currentActiveChatAgendaId, "chats"), {
+        senderId: userProfile.uid,
+        senderName: userProfile.name,
+        senderGender: userProfile.gender,
+        text,
+        timestamp: serverTimestamp()
+      });
+
+      chatInput.value = "";
+    });
+
+  </script>
+</body>
+</html>      </form>
     </div>
   </div>
 
