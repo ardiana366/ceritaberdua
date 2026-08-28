@@ -320,7 +320,7 @@
       </div>
 
       <form id="chatForm" class="flex gap-2 pt-3 border-t border-slate-200">
-        <input id="chatInput" type="text" required placeholder="Tulis pesan..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+        <input id="chatInput" type="text" required placeholder="Tulis pesan atau link..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
         <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition flex items-center gap-1">
           <i data-lucide="send" class="h-4 w-4"></i>
         </button>
@@ -431,7 +431,7 @@
       }
     });
 
-    // Go to Date Handler: Melompat ke tanggal agenda saat judul modal chat diklik
+    // Go to Date Handler
     btnChatGoToDate.addEventListener("click", () => {
       if (currentActiveChatAgendaDate) {
         const targetDate = new Date(currentActiveChatAgendaDate + "T00:00:00");
@@ -485,6 +485,34 @@
       renderCalendar();
       renderSelectedDayAgendas();
       renderNotificationTray();
+    }
+
+    // Helper: Mengubah URL dalam teks menjadi clickable HTML links aman
+    function parseMessageWithLinks(rawText, isMine) {
+      if (!rawText) return "";
+
+      // Escape karakter HTML dasar untuk mencegah XSS
+      const escaped = rawText
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+      // Regex untuk mendeteksi URL (http, https, www)
+      const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+
+      const linkColorClass = isMine 
+        ? "text-white underline font-medium hover:text-slate-200" 
+        : "text-blue-600 underline font-medium hover:text-blue-800";
+
+      return escaped.replace(urlRegex, (url) => {
+        let href = url;
+        if (url.toLowerCase().startsWith("www.")) {
+          href = "https://" + url;
+        }
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="${linkColorClass} break-all" onclick="event.stopPropagation()">${url}</a>`;
+      });
     }
 
     if (userProfile && userProfile.pairCode) {
@@ -1111,7 +1139,7 @@
     });
 
     // ----------------------------------------------------
-    // CHAT ROOM PER AGENDA & GO TO DATE FUNCTION
+    // CHAT ROOM PER AGENDA & CLICKABLE LINKS PARSER
     // ----------------------------------------------------
     const chatModal = document.getElementById("chatModal");
     const chatMessages = document.getElementById("chatMessages");
@@ -1159,15 +1187,18 @@
         msgs.forEach((msg) => {
           const isMine = msg.senderId === userProfile.uid;
           const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          // Parse teks pesan menjadi link yang dapat diklik
+          const formattedText = parseMessageWithLinks(msg.text, isMine);
 
           const bubble = document.createElement("div");
           bubble.className = `flex flex-col ${isMine ? 'items-end' : 'items-start'}`;
           bubble.innerHTML = `
             <span class="text-[10px] text-slate-400 mb-0.5 px-1">${msg.senderName} (${msg.senderGender === 'female' ? '👩' : '👨'})</span>
-            <div class="max-w-[75%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+            <div class="max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed break-words ${
               isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'
             }">
-              ${msg.text}
+              ${formattedText}
             </div>
             <span class="text-[9px] text-slate-400 mt-0.5 px-1">${time}</span>
           `;
