@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agenda & Live Location</title>
+  <title>CoupleSync - Agenda & Live Location</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
   <style>
     #map { height: 260px; border-radius: 0.75rem; }
     .glass-card {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -26,57 +26,66 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen pb-12">
 
-  <!-- AUTH SCREEN -->
-  <div id="authScreen" class="flex min-h-screen items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 p-8 shadow-sm">
+  <!-- ONBOARDING MODAL / FORM JOIN (JIKA BELUM DISIMPAN DI BROWSER) -->
+  <div id="joinScreen" class="flex min-h-screen items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl border border-slate-200 p-8 shadow-md">
       <div class="text-center mb-6">
         <h1 class="text-2xl font-bold tracking-tight text-slate-900">CoupleSync</h1>
-        <p class="text-sm text-slate-500 mt-1">Masuk untuk melihat agenda bersama & lokasi</p>
+        <p class="text-xs text-slate-500 mt-1">Cukup isi data singkat untuk saling terhubung dengan pasangan</p>
       </div>
 
-      <div class="space-y-4">
+      <form id="joinForm" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Email</label>
-          <input id="authEmail" type="email" placeholder="nama@email.com" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nama Panggilan</label>
+          <input id="inputName" type="text" required placeholder="Contoh: Ari" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Password</label>
-          <input id="authPass" type="password" placeholder="••••••••" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Jenis Kelamin</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center justify-center gap-2 rounded-lg border border-slate-300 p-2.5 text-xs font-medium cursor-pointer hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 has-[:checked]:text-blue-700">
+              <input type="radio" name="gender" value="male" checked class="hidden" />
+              <span>👨 Laki-laki</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 rounded-lg border border-slate-300 p-2.5 text-xs font-medium cursor-pointer hover:bg-slate-50 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50 has-[:checked]:text-rose-700">
+              <input type="radio" name="gender" value="female" class="hidden" />
+              <span>👩 Perempuan</span>
+            </label>
+          </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nama Tampilan</label>
-          <input id="authName" type="text" placeholder="Nama Anda" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Pairing Code (Sama dengan Pasangan)</label>
-          <input id="authPairCode" type="text" placeholder="contoh: LOVE-2026" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Pairing Code (Harus Sama)</label>
+          <input id="inputPairCode" type="text" required placeholder="Contoh: KITA-2026" class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none uppercase font-mono" />
+          <p class="text-[11px] text-slate-400 mt-1">Pastikan pasangan Anda memasukkan kode yang sama persis.</p>
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button id="btnLogin" class="w-1/2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">Masuk</button>
-          <button id="btnRegister" class="w-1/2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">Daftar</button>
-        </div>
-        <p id="authError" class="text-xs text-rose-500 text-center"></p>
-      </div>
+        <button type="submit" class="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition">
+          Mulai Terhubung
+        </button>
+      </form>
     </div>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- MAIN APP SCREEN -->
   <div id="appScreen" class="hidden max-w-5xl mx-auto px-4 pt-6 space-y-6">
 
-    <!-- Top Navbar -->
+    <!-- Top Header -->
     <header class="glass-card rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm">
       <div class="flex items-center space-x-3">
-        <div class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm" id="userInitial">U</div>
+        <div id="userAvatar" class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white">U</div>
         <div>
-          <h2 class="text-base font-bold text-slate-900" id="userNameLabel">User</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-slate-900" id="headerUserName">Nama</h2>
+            <span id="headerGenderBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold"></span>
+          </div>
           <p class="text-xs text-slate-500 flex items-center gap-1">
-            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
-            Pair: <span id="pairCodeLabel" class="font-semibold text-slate-700"></span>
+            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Pair Code: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
           </p>
         </div>
       </div>
-      <button id="btnLogout" class="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">Keluar</button>
+      <button id="btnSwitchAccount" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">
+        Ganti Profil
+      </button>
     </header>
 
     <!-- Location Card (Peta Leaflet) -->
@@ -86,18 +95,18 @@
           <i data-lucide="map-pin" class="h-4 w-4 text-slate-600"></i>
           Live Lokasi Pasangan
         </h3>
-        <button id="btnRefreshLoc" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
+        <button id="btnUpdateLocation" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
           <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Update Lokasi Saya
         </button>
       </div>
       <div id="map"></div>
-      <div id="locationStatus" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-600 pt-1">
-        <div id="myLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Saya: Memuat...</div>
-        <div id="partnerLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Pasangan: Menunggu data...</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-600 pt-1">
+        <div id="myLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Saya: Memuat GPS...</div>
+        <div id="partnerLocInfo" class="rounded-lg bg-slate-50 p-2.5 border border-slate-200/60">Lokasi Pasangan: Menunggu data pasangan...</div>
       </div>
     </section>
 
-    <!-- Main Grid: Timeline Agenda & Form Tambah -->
+    <!-- Grid Utama: Form Tambah Agenda & Timeline -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Form Tambah Agenda -->
@@ -109,12 +118,12 @@
         <form id="agendaForm" class="space-y-3">
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Judul Agenda</label>
-            <input id="agendaTitle" type="text" required placeholder="Contoh: Weekend Ride / Dinner" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
+            <input id="agendaTitle" type="text" required placeholder="Contoh: Dinner / Nonton / Touring" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Tipe Visibilitas</label>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Sifat Agenda</label>
             <select id="agendaType" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none bg-white">
-              <option value="couple">Agenda Berdua (Publik Pasangan)</option>
+              <option value="couple">Agenda Berdua (Dapat Dilihat Pasangan)</option>
               <option value="private">Agenda Pribadi (Hanya Saya)</option>
             </select>
           </div>
@@ -127,10 +136,10 @@
             <input id="agendaEnd" type="datetime-local" required class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Catatan / Keterangan</label>
-            <textarea id="agendaDesc" rows="2" placeholder="Detail kegiatan atau titik kumpul..." class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none"></textarea>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Catatan / Lokasi</label>
+            <textarea id="agendaDesc" rows="2" placeholder="Catatan tempat, perlengkapan, dll..." class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-slate-800 focus:outline-none"></textarea>
           </div>
-          <button type="submit" class="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 transition">Simpan Agenda</button>
+          <button type="submit" class="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 transition">Simpan ke Jadwal</button>
         </form>
       </section>
 
@@ -139,13 +148,13 @@
         <div class="flex items-center justify-between border-b border-slate-200 pb-3">
           <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
             <i data-lucide="clock" class="h-4 w-4 text-slate-600"></i>
-            Timeline & Durasi Agenda
+            Jadwal & Durasi Waktu
           </h3>
-          <span id="agendaCount" class="text-xs rounded-full bg-slate-200 px-2.5 py-0.5 font-medium text-slate-700">0 Agenda</span>
+          <span id="agendaCountBadge" class="text-xs rounded-full bg-slate-200 px-2.5 py-0.5 font-medium text-slate-700">0 Agenda</span>
         </div>
         
         <div id="agendaList" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-          <p class="text-sm text-slate-400 text-center py-8">Belum ada agenda yang tersimpan.</p>
+          <p class="text-sm text-slate-400 text-center py-8">Belum ada agenda tersimpan.</p>
         </div>
       </section>
 
@@ -155,44 +164,36 @@
   <!-- CHAT ROOM MODAL (PER AGENDA) -->
   <div id="chatModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
     <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl flex flex-col h-[520px]">
-      
-      <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
         <div>
-          <h4 id="chatModalTitle" class="text-base font-bold text-slate-900">Agenda Chat</h4>
-          <p id="chatModalSubtitle" class="text-xs text-slate-500">Ruang diskusi agenda</p>
+          <h4 id="chatModalTitle" class="text-base font-bold text-slate-900">Ruang Obrolan</h4>
+          <p id="chatModalSubtitle" class="text-xs text-slate-500">Diskusi seputar agenda ini</p>
         </div>
         <button id="btnCloseChat" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
           <i data-lucide="x" class="h-5 w-5"></i>
         </button>
       </div>
 
-      <!-- Messages Area -->
       <div id="chatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm">
-        <p class="text-xs text-slate-400 text-center py-6">Belum ada pesan. Mulai obrolan untuk agenda ini.</p>
+        <p class="text-xs text-slate-400 text-center py-6">Belum ada obrolan.</p>
       </div>
 
-      <!-- Message Input -->
       <form id="chatForm" class="flex gap-2 pt-3 border-t border-slate-200">
-        <input id="chatInput" type="text" required placeholder="Ketik pesan..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
+        <input id="chatInput" type="text" required placeholder="Tulis pesan..." class="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:border-slate-800 focus:outline-none" />
         <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 transition flex items-center gap-1">
           <i data-lucide="send" class="h-4 w-4"></i>
         </button>
       </form>
-
     </div>
   </div>
 
-  <!-- Firebase v10 Modular CDN Script -->
+  <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { 
       getFirestore, 
       doc, 
       setDoc, 
-      getDoc, 
-      updateDoc,
       collection, 
       addDoc, 
       query, 
@@ -203,7 +204,7 @@
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     // ----------------------------------------------------
-    // Konfigurasi Project Firebase: ceritaberdua
+    // Konfigurasi Firebase (Project: ceritaberdua)
     // ----------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyC5qI-YCwJK9Xj5Fci7vIArFMetj1ZP2_w",
@@ -216,29 +217,31 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let currentUser = null;
-    let currentPairCode = null;
+    // State Lokal
+    let userProfile = JSON.parse(localStorage.getItem("couple_user_profile")) || null;
     let currentActiveChatAgendaId = null;
     let chatUnsubscribe = null;
     let map = null;
-    let userMarker = null;
-    let partnerMarker = null;
+    let markers = {};
 
-    // DOM Elements
-    const authScreen = document.getElementById("authScreen");
+    const joinScreen = document.getElementById("joinScreen");
     const appScreen = document.getElementById("appScreen");
-    const authEmail = document.getElementById("authEmail");
-    const authPass = document.getElementById("authPass");
-    const authName = document.getElementById("authName");
-    const authPairCode = document.getElementById("authPairCode");
-    const authError = document.getElementById("authError");
-    const btnLogin = document.getElementById("btnLogin");
-    const btnRegister = document.getElementById("btnRegister");
-    const btnLogout = document.getElementById("btnLogout");
 
+    // Inisialisasi ID Unik per Browser jika belum ada
+    function getOrCreateDeviceId() {
+      let devId = localStorage.getItem("couple_device_id");
+      if (!devId) {
+        devId = "user_" + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem("couple_device_id", devId);
+      }
+      return devId;
+    }
+
+    const deviceId = getOrCreateDeviceId();
+
+    // Setup Leaflet Map
     function initMap() {
       if (map) return;
       map = L.map('map').setView([-6.9175, 107.6191], 13);
@@ -247,120 +250,130 @@
       }).addTo(map);
     }
 
-    // Auth Listeners
-    btnLogin.addEventListener("click", async () => {
-      authError.textContent = "";
-      try {
-        const cred = await signInWithEmailAndPassword(auth, authEmail.value, authPass.value);
-        if (authPairCode.value.trim()) {
-          await updateDoc(doc(db, "users", cred.user.uid), {
-            pairCode: authPairCode.value.trim()
-          });
-        }
-      } catch (e) {
-        authError.textContent = e.message;
+    // Cek status sesi lokal
+    if (userProfile && userProfile.pairCode) {
+      loadMainApp();
+    } else {
+      joinScreen.classList.remove("hidden");
+      appScreen.classList.add("hidden");
+    }
+
+    // Handler Form Join / Input Data Awal
+    document.getElementById("joinForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("inputName").value.trim();
+      const gender = document.querySelector('input[name="gender"]:checked').value;
+      const pairCode = document.getElementById("inputPairCode").value.trim().toUpperCase();
+
+      if (!name || !pairCode) return;
+
+      userProfile = { uid: deviceId, name, gender, pairCode };
+      localStorage.setItem("couple_user_profile", JSON.stringify(userProfile));
+
+      loadMainApp();
+    });
+
+    document.getElementById("btnSwitchAccount").addEventListener("click", () => {
+      if (confirm("Ganti nama atau pairing code?")) {
+        localStorage.removeItem("couple_user_profile");
+        location.reload();
       }
     });
 
-    btnRegister.addEventListener("click", async () => {
-      authError.textContent = "";
-      if (!authPairCode.value.trim() || !authName.value.trim()) {
-        authError.textContent = "Nama dan Pairing Code wajib diisi!";
-        return;
-      }
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, authEmail.value, authPass.value);
-        await setDoc(doc(db, "users", cred.user.uid), {
-          name: authName.value.trim(),
-          email: authEmail.value.trim(),
-          pairCode: authPairCode.value.trim(),
-          createdAt: serverTimestamp()
-        });
-      } catch (e) {
-        authError.textContent = e.message;
-      }
-    });
+    function loadMainApp() {
+      joinScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
 
-    btnLogout.addEventListener("click", () => signOut(auth));
+      document.getElementById("headerUserName").textContent = userProfile.name;
+      document.getElementById("headerPairCode").textContent = userProfile.pairCode;
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const data = userDoc.exists() ? userDoc.data() : {};
-        currentPairCode = data.pairCode || "DEFAULT";
+      const avatar = document.getElementById("userAvatar");
+      const badge = document.getElementById("headerGenderBadge");
 
-        document.getElementById("userNameLabel").textContent = data.name || user.email;
-        document.getElementById("userInitial").textContent = (data.name || user.email).charAt(0).toUpperCase();
-        document.getElementById("pairCodeLabel").textContent = currentPairCode;
-
-        authScreen.classList.add("hidden");
-        appScreen.classList.remove("hidden");
-        lucide.createIcons();
-
-        initMap();
-        syncLocation();
-        listenToAgendas();
-        listenToLocations();
+      if (userProfile.gender === "female") {
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-rose-500";
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-700";
+        badge.textContent = "👩 Perempuan";
       } else {
-        currentUser = null;
-        currentPairCode = null;
-        authScreen.classList.remove("hidden");
-        appScreen.classList.add("hidden");
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-blue-600";
+        badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700";
+        badge.textContent = "👨 Laki-laki";
       }
-    });
+      avatar.textContent = userProfile.name.charAt(0).toUpperCase();
+
+      lucide.createIcons();
+      initMap();
+      syncLocation();
+      listenToLocations();
+      listenToAgendas();
+    }
 
     // ----------------------------------------------------
-    // GEOLOKASI (Pelacakan Lokasi Firestore)
+    // GEOLOKASI (Realtime Firestore)
     // ----------------------------------------------------
     function syncLocation() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
             const { latitude, longitude } = pos.coords;
-            await updateDoc(doc(db, "users", currentUser.uid), {
+            await setDoc(doc(db, "locations", `${userProfile.pairCode}_${userProfile.uid}`), {
+              uid: userProfile.uid,
+              name: userProfile.name,
+              gender: userProfile.gender,
+              pairCode: userProfile.pairCode,
               latitude,
               longitude,
               updatedAt: serverTimestamp()
-            });
+            }, { merge: true });
           },
           (err) => {
-            document.getElementById("myLocInfo").textContent = "Gagal memuat GPS: " + err.message;
+            document.getElementById("myLocInfo").textContent = "GPS tidak aktif / diblokir";
           },
           { enableHighAccuracy: true }
         );
       }
     }
-    document.getElementById("btnRefreshLoc").addEventListener("click", syncLocation);
+    document.getElementById("btnUpdateLocation").addEventListener("click", syncLocation);
 
     function listenToLocations() {
-      const q = query(collection(db, "users"), where("pairCode", "==", currentPairCode));
+      const q = query(collection(db, "locations"), where("pairCode", "==", userProfile.pairCode));
       onSnapshot(q, (snapshot) => {
         const bounds = [];
-        snapshot.forEach((docSnap) => {
-          const uData = docSnap.data();
-          if (!uData.latitude || !uData.longitude) return;
+        let foundPartner = false;
 
-          const isMe = docSnap.id === currentUser.uid;
-          const latlng = [uData.latitude, uData.longitude];
+        snapshot.forEach((docSnap) => {
+          const loc = docSnap.data();
+          if (!loc.latitude || !loc.longitude) return;
+
+          const isMe = loc.uid === userProfile.uid;
+          const latlng = [loc.latitude, loc.longitude];
           bounds.push(latlng);
 
+          const iconColor = loc.gender === 'female' ? '#ec4899' : '#2563eb';
+
           if (isMe) {
-            document.getElementById("myLocInfo").innerHTML = `<b>Lokasi Saya:</b> ${uData.latitude.toFixed(4)}, ${uData.longitude.toFixed(4)}`;
-            if (!userMarker) {
-              userMarker = L.marker(latlng).addTo(map).bindPopup("Saya");
-            } else {
-              userMarker.setLatLng(latlng);
-            }
+            document.getElementById("myLocInfo").innerHTML = `<b>Lokasi Saya:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
           } else {
-            document.getElementById("partnerLocInfo").innerHTML = `<b>Lokasi Pasangan:</b> ${uData.latitude.toFixed(4)}, ${uData.longitude.toFixed(4)}`;
-            if (!partnerMarker) {
-              partnerMarker = L.marker(latlng).addTo(map).bindPopup(uData.name || "Pasangan");
-            } else {
-              partnerMarker.setLatLng(latlng);
-            }
+            foundPartner = true;
+            document.getElementById("partnerLocInfo").innerHTML = `<b>Lokasi ${loc.name}:</b> ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`;
+          }
+
+          if (!markers[loc.uid]) {
+            markers[loc.uid] = L.circleMarker(latlng, {
+              radius: 9,
+              fillColor: iconColor,
+              color: "#ffffff",
+              weight: 2,
+              fillOpacity: 0.9
+            }).addTo(map).bindPopup(`<b>${loc.name}</b> (${loc.gender === 'female' ? 'Perempuan' : 'Laki-laki'})`);
+          } else {
+            markers[loc.uid].setLatLng(latlng);
           }
         });
+
+        if (!foundPartner) {
+          document.getElementById("partnerLocInfo").textContent = "Menunggu pasangan membuka web ini...";
+        }
 
         if (bounds.length > 0) {
           map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
@@ -369,7 +382,7 @@
     }
 
     // ----------------------------------------------------
-    // AGENDA (Durasi Tanggal & Jam)
+    // AGENDA & TIMELINE DURASI
     // ----------------------------------------------------
     document.getElementById("agendaForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -380,7 +393,7 @@
       const desc = document.getElementById("agendaDesc").value;
 
       if (new Date(start) >= new Date(end)) {
-        alert("Waktu selesai harus lebih besar dari waktu mulai!");
+        alert("Waktu selesai harus setelah waktu mulai!");
         return;
       }
 
@@ -390,9 +403,9 @@
         start,
         end,
         desc,
-        pairCode: currentPairCode,
-        createdBy: currentUser.uid,
-        createdByName: document.getElementById("userNameLabel").textContent,
+        pairCode: userProfile.pairCode,
+        createdBy: userProfile.uid,
+        createdByName: userProfile.name,
         createdAt: serverTimestamp()
       });
 
@@ -415,7 +428,7 @@
     function listenToAgendas() {
       const q = query(
         collection(db, "agendas"),
-        where("pairCode", "==", currentPairCode),
+        where("pairCode", "==", userProfile.pairCode),
         orderBy("start", "asc")
       );
 
@@ -428,9 +441,9 @@
           const item = docSnap.data();
           const agendaId = docSnap.id;
           const isPrivate = item.type === "private";
-          const isMine = item.createdBy === currentUser.uid;
+          const isMine = item.createdBy === userProfile.uid;
 
-          // Filter agenda: jika private dan bukan milik user, jangan tampilkan
+          // Filter: Jika agenda private dan bukan dibuat oleh device ini, jangan tampilkan
           if (isPrivate && !isMine) return;
           visibleCount++;
 
@@ -440,7 +453,7 @@
 
           const card = document.createElement("div");
           card.className = `rounded-xl border p-4 transition ${
-            isPrivate ? 'bg-amber-50/50 border-amber-200' : 'bg-white border-slate-200 hover:border-slate-300'
+            isPrivate ? 'bg-amber-50/60 border-amber-200' : 'bg-white border-slate-200 hover:border-slate-300'
           } shadow-sm`;
 
           card.innerHTML = `
@@ -453,8 +466,9 @@
                     ${isPrivate ? 'Pribadi' : 'Berdua'}
                   </span>
                   <h4 class="font-bold text-slate-900 text-sm md:text-base">${item.title}</h4>
+                  <span class="text-[10px] text-slate-400">oleh ${item.createdByName}</span>
                 </div>
-                <p class="text-xs text-slate-500 mt-1">${item.desc || 'Tidak ada catatan tambahan'}</p>
+                <p class="text-xs text-slate-500 mt-1">${item.desc || 'Tidak ada catatan'}</p>
               </div>
               <button data-chat-id="${agendaId}" data-chat-title="${item.title}" class="btn-open-chat rounded-lg bg-slate-100 hover:bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition">
                 <i data-lucide="message-square" class="h-3.5 w-3.5"></i>
@@ -471,7 +485,7 @@
           listEl.appendChild(card);
         });
 
-        document.getElementById("agendaCount").textContent = `${visibleCount} Agenda`;
+        document.getElementById("agendaCountBadge").textContent = `${visibleCount} Agenda`;
         lucide.createIcons();
 
         document.querySelectorAll(".btn-open-chat").forEach((btn) => {
@@ -483,7 +497,7 @@
     }
 
     // ----------------------------------------------------
-    // CHAT ROOM PER AGENDA (Firestore Sub-collection)
+    // CHAT ROOM PER AGENDA
     // ----------------------------------------------------
     const chatModal = document.getElementById("chatModal");
     const chatMessages = document.getElementById("chatMessages");
@@ -507,19 +521,19 @@
       chatUnsubscribe = onSnapshot(chatsQuery, (snapshot) => {
         chatMessages.innerHTML = "";
         if (snapshot.empty) {
-          chatMessages.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada diskusi di agenda ini.</p>`;
+          chatMessages.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada obrolan di agenda ini.</p>`;
           return;
         }
 
         snapshot.forEach((docSnap) => {
           const msg = docSnap.data();
-          const isMine = msg.senderId === currentUser.uid;
+          const isMine = msg.senderId === userProfile.uid;
           const time = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
           const bubble = document.createElement("div");
           bubble.className = `flex flex-col ${isMine ? 'items-end' : 'items-start'}`;
           bubble.innerHTML = `
-            <span class="text-[10px] text-slate-400 mb-0.5 px-1">${msg.senderName}</span>
+            <span class="text-[10px] text-slate-400 mb-0.5 px-1">${msg.senderName} (${msg.senderGender === 'female' ? '👩' : '👨'})</span>
             <div class="max-w-[75%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
               isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'
             }">
@@ -546,8 +560,9 @@
       if (!text || !currentActiveChatAgendaId) return;
 
       await addDoc(collection(db, "agendas", currentActiveChatAgendaId, "chats"), {
-        senderId: currentUser.uid,
-        senderName: document.getElementById("userNameLabel").textContent,
+        senderId: userProfile.uid,
+        senderName: userProfile.name,
+        senderGender: userProfile.gender,
         text,
         timestamp: serverTimestamp()
       });
