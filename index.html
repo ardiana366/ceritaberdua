@@ -26,13 +26,13 @@
     /* Animasi Berkedip Merah untuk Kolom Tanggal Kalender */
     @keyframes pulse-red-box {
       0%, 100% {
-        background-color: rgba(254, 226, 226, 0.95); /* red-100 */
-        border-color: #ef4444; /* red-500 */
+        background-color: rgba(254, 226, 226, 0.95);
+        border-color: #ef4444;
         box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
       }
       50% {
-        background-color: rgba(254, 202, 202, 0.5); /* red-200 */
-        border-color: #b91c1c; /* red-700 */
+        background-color: rgba(254, 202, 202, 0.5);
+        border-color: #b91c1c;
         box-shadow: 0 0 14px 2px rgba(239, 68, 68, 0.45);
       }
     }
@@ -95,28 +95,67 @@
   <div id="appScreen" class="hidden max-w-6xl mx-auto px-4 pt-6 space-y-6">
 
     <!-- Top Header -->
-    <header class="glass-card rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm">
-      <div class="flex items-center space-x-3">
-        <div id="userAvatar" class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white">U</div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 class="text-base font-bold text-slate-900" id="headerUserName">Nama</h2>
-            <span id="headerGenderBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold"></span>
+    <header class="glass-card rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm relative z-30">
+      
+      <!-- User Profile & Dropdown Container -->
+      <div class="relative">
+        <button id="btnUserDropdown" class="flex items-center space-x-3 text-left p-1 rounded-xl hover:bg-slate-100/70 transition">
+          <div id="userAvatar" class="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-sm ring-2 ring-white">U</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-slate-900" id="headerUserName">Nama</h2>
+              <span id="headerGenderBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold"></span>
+              <i data-lucide="chevron-down" class="h-3.5 w-3.5 text-slate-400"></i>
+            </div>
+            <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+              <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Grup: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
+            </p>
           </div>
-          <p class="text-xs text-slate-500 flex items-center gap-1">
-            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Grup: <span id="headerPairCode" class="font-semibold text-slate-800 uppercase font-mono"></span>
-          </p>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="userDropdownMenu" class="hidden absolute left-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 text-xs space-y-1 z-40">
+          <div class="px-3 py-2 border-b border-slate-100">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Profil Saya</p>
+            <p class="font-bold text-slate-800 text-sm truncate" id="dropdownUserName">User</p>
+            <p class="text-slate-500 text-[11px] font-mono mt-0.5" id="dropdownGroupCode">Grup: -</p>
+          </div>
+          <button id="btnDropdownSwitchAccount" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-medium transition text-left">
+            <i data-lucide="log-out" class="h-4 w-4"></i>
+            <span>Ganti Profil / Keluar</span>
+          </button>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button id="btnOpenAddModal" class="rounded-lg bg-slate-900 text-white px-3.5 py-2 text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm">
-          <i data-lucide="plus" class="h-4 w-4"></i> Tambah Agenda
-        </button>
-        <button id="btnSwitchAccount" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition">
-          Ganti Profil / Grup
-        </button>
+
+      <!-- Header Right: Notification Tray Toggle -->
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell & Tray -->
+        <div class="relative">
+          <button id="btnNotifTray" class="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition shadow-sm flex items-center justify-center">
+            <i data-lucide="bell" class="h-5 w-5"></i>
+            <!-- Red Badge Counter -->
+            <span id="notifBadgeCounter" class="hidden absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm badge-unread-ping">0</span>
+          </button>
+
+          <!-- Notification Tray Floating Panel -->
+          <div id="notificationTray" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 z-40 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h4 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <i data-lucide="bell" class="h-4 w-4 text-indigo-600"></i>
+                Notifikasi & Chat Terbaru
+              </h4>
+              <span id="notifTrayUnreadText" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">0 Baru</span>
+            </div>
+
+            <!-- List Notifikasi -->
+            <div id="notifTrayList" class="max-h-72 overflow-y-auto space-y-2 pr-1 text-xs">
+              <p class="text-slate-400 text-center py-6">Belum ada notifikasi chat baru.</p>
+            </div>
+          </div>
+        </div>
       </div>
+
     </header>
 
     <!-- Location Card (Peta Leaflet Multi-Member) -->
@@ -180,15 +219,24 @@
         </div>
       </section>
 
-      <!-- Kolom Kanan: Detail Agenda & Jam pada Tanggal yang Dipilih -->
+      <!-- Kolom Kanan: Detail Agenda Tanggal & Tombol Tambah Agenda -->
       <section class="glass-card rounded-2xl border border-slate-200 p-5 shadow-sm lg:col-span-5 flex flex-col justify-between space-y-4">
         <div>
-          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <!-- Header Kolom Agenda Tanggal + Tombol Tambah Agenda -->
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 gap-2">
             <div>
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Agenda Tanggal</p>
-              <h4 id="selectedDateTitle" class="text-base font-bold text-slate-900">Pilih Tanggal</h4>
+              <div class="flex items-center gap-2">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Agenda Tanggal</p>
+                <span id="selectedDayCount" class="text-[10px] rounded-full bg-slate-200 px-2 py-0.5 font-semibold text-slate-700">0 Jadwal</span>
+              </div>
+              <h4 id="selectedDateTitle" class="text-base font-bold text-slate-900 mt-0.5">Pilih Tanggal</h4>
             </div>
-            <span id="selectedDayCount" class="text-xs rounded-full bg-slate-200 px-2.5 py-0.5 font-medium text-slate-700">0 Jadwal</span>
+
+            <!-- Tombol Tambah Agenda di dalam Kolom Tanggal -->
+            <button id="btnOpenAddModal" class="rounded-xl bg-slate-900 text-white px-3 py-2 text-xs font-semibold hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm shrink-0">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+              <span>Tambah Agenda</span>
+            </button>
           </div>
 
           <div id="dayAgendaList" class="space-y-3 pt-3 max-h-[420px] overflow-y-auto pr-1">
@@ -329,6 +377,48 @@
     const appScreen = document.getElementById("appScreen");
     const agendaModal = document.getElementById("agendaModal");
 
+    // Dropdown Profile
+    const btnUserDropdown = document.getElementById("btnUserDropdown");
+    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    const btnDropdownSwitchAccount = document.getElementById("btnDropdownSwitchAccount");
+
+    // Notification Tray Elements
+    const btnNotifTray = document.getElementById("btnNotifTray");
+    const notificationTray = document.getElementById("notificationTray");
+    const notifBadgeCounter = document.getElementById("notifBadgeCounter");
+    const notifTrayUnreadText = document.getElementById("notifTrayUnreadText");
+    const notifTrayList = document.getElementById("notifTrayList");
+
+    // Dropdown Handlers
+    btnUserDropdown.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userDropdownMenu.classList.toggle("hidden");
+      notificationTray.classList.add("hidden");
+    });
+
+    // Notification Tray Handlers
+    btnNotifTray.addEventListener("click", (e) => {
+      e.stopPropagation();
+      notificationTray.classList.toggle("hidden");
+      userDropdownMenu.classList.add("hidden");
+    });
+
+    // Close Dropdowns on Click Outside
+    document.addEventListener("click", () => {
+      userDropdownMenu.classList.add("hidden");
+      notificationTray.classList.add("hidden");
+    });
+
+    userDropdownMenu.addEventListener("click", (e) => e.stopPropagation());
+    notificationTray.addEventListener("click", (e) => e.stopPropagation());
+
+    btnDropdownSwitchAccount.addEventListener("click", () => {
+      if (confirm("Ganti profil atau keluar dari Kode Grup?")) {
+        localStorage.removeItem("group_user_profile");
+        location.reload();
+      }
+    });
+
     function initMap() {
       if (map) return;
       map = L.map('map').setView([-6.9175, 107.6191], 13);
@@ -345,7 +435,7 @@
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.frequency.value = 587.33; // Nada D5
+        osc.frequency.value = 587.33;
         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
         osc.start();
@@ -353,7 +443,6 @@
       } catch (err) {}
     }
 
-    // Cek apakah agenda memiliki unread chat
     function checkHasUnreadChat(agenda) {
       if (!agenda.lastChatTime) return false;
       if (agenda.lastChatSenderId === userProfile.uid) return false;
@@ -362,12 +451,12 @@
       return agenda.lastChatTime > lastRead;
     }
 
-    // Tandai chat pada agenda ini sudah dibaca
     function markChatAsRead(agendaId) {
       readReceipts[agendaId] = Date.now();
       localStorage.setItem("group_chat_read_receipts", JSON.stringify(readReceipts));
       renderCalendar();
       renderSelectedDayAgendas();
+      renderNotificationTray();
     }
 
     if (userProfile && userProfile.pairCode) {
@@ -389,29 +478,24 @@
       loadMainApp();
     });
 
-    document.getElementById("btnSwitchAccount").addEventListener("click", () => {
-      if (confirm("Ganti profil atau Kode Grup?")) {
-        localStorage.removeItem("group_user_profile");
-        location.reload();
-      }
-    });
-
     function loadMainApp() {
       joinScreen.classList.add("hidden");
       appScreen.classList.remove("hidden");
 
       document.getElementById("headerUserName").textContent = userProfile.name;
       document.getElementById("headerPairCode").textContent = userProfile.pairCode;
+      document.getElementById("dropdownUserName").textContent = userProfile.name;
+      document.getElementById("dropdownGroupCode").textContent = `Grup: ${userProfile.pairCode}`;
 
       const avatar = document.getElementById("userAvatar");
       const badge = document.getElementById("headerGenderBadge");
 
       if (userProfile.gender === "female") {
-        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-rose-500";
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-rose-500 shadow-sm ring-2 ring-white";
         badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-700";
         badge.textContent = "👩 Perempuan";
       } else {
-        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-blue-600";
+        avatar.className = "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm text-white bg-blue-600 shadow-sm ring-2 ring-white";
         badge.className = "text-[10px] px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700";
         badge.textContent = "👨 Laki-laki";
       }
@@ -426,7 +510,7 @@
       renderSelectedDayAgendas();
     }
 
-    // Modal Create Trigger
+    // Modal Create Trigger (Dari Kolom Agenda Tanggal)
     document.getElementById("btnOpenAddModal").addEventListener("click", () => {
       document.getElementById("editAgendaId").value = "";
       document.getElementById("agendaModalTitle").innerHTML = `<i data-lucide="calendar-plus" class="h-4 w-4 text-slate-700"></i> Tambah Agenda Baru`;
@@ -446,6 +530,81 @@
     document.getElementById("btnCloseAgendaModal").addEventListener("click", () => {
       agendaModal.classList.add("hidden");
     });
+
+    // ----------------------------------------------------
+    // NOTIFICATION TRAY RENDERER
+    // ----------------------------------------------------
+    function renderNotificationTray() {
+      const unreadAgendas = allAgendas.filter(a => checkHasUnreadChat(a));
+      
+      // Update badge counter pada tombol bell lonceng
+      if (unreadAgendas.length > 0) {
+        notifBadgeCounter.textContent = unreadAgendas.length;
+        notifBadgeCounter.classList.remove("hidden");
+        notifTrayUnreadText.textContent = `${unreadAgendas.length} Baru`;
+        notifTrayUnreadText.className = "text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold";
+      } else {
+        notifBadgeCounter.classList.add("hidden");
+        notifTrayUnreadText.textContent = `0 Baru`;
+        notifTrayUnreadText.className = "text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold";
+      }
+
+      // Render list di tray
+      const recentChatAgendas = allAgendas
+        .filter(a => a.lastChatTime)
+        .sort((a, b) => (b.lastChatTime || 0) - (a.lastChatTime || 0));
+
+      notifTrayList.innerHTML = "";
+
+      if (recentChatAgendas.length === 0) {
+        notifTrayList.innerHTML = `<p class="text-slate-400 text-center py-6 text-xs">Belum ada obrolan di grup ini.</p>`;
+        return;
+      }
+
+      recentChatAgendas.forEach((item) => {
+        const isUnread = checkHasUnreadChat(item);
+        const timeStr = item.lastChatTime ? new Date(item.lastChatTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const dateStr = item.lastChatTime ? new Date(item.lastChatTime).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' }) : '';
+
+        const itemEl = document.createElement("div");
+        itemEl.className = `p-2.5 rounded-xl border transition cursor-pointer flex items-start justify-between gap-2 ${
+          isUnread ? 'bg-rose-50/70 border-rose-200 hover:bg-rose-100/70' : 'bg-slate-50/60 border-slate-200/70 hover:bg-slate-100'
+        }`;
+
+        itemEl.innerHTML = `
+          <div class="flex items-start gap-2 overflow-hidden">
+            <div class="h-7 w-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+              isUnread ? 'bg-rose-500 text-white' : 'bg-slate-200 text-slate-700'
+            }">
+              <i data-lucide="message-square" class="h-3.5 w-3.5"></i>
+            </div>
+            <div class="overflow-hidden">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-slate-900 truncate text-xs">${item.title}</span>
+                ${isUnread ? '<span class="h-2 w-2 rounded-full bg-rose-500 shrink-0 badge-unread-ping"></span>' : ''}
+              </div>
+              <p class="text-[11px] text-slate-500 truncate mt-0.5">
+                <b>${item.lastChatSenderName || 'Anggota'}:</b> ${item.lastChatText || 'Mengirim pesan'}
+              </p>
+            </div>
+          </div>
+          <div class="text-[9px] text-slate-400 text-right shrink-0">
+            <div>${timeStr}</div>
+            <div>${dateStr}</div>
+          </div>
+        `;
+
+        itemEl.addEventListener("click", () => {
+          notificationTray.classList.add("hidden");
+          markChatAsRead(item.id);
+          openChatModal(item.id, item.title);
+        });
+
+        notifTrayList.appendChild(itemEl);
+      });
+
+      lucide.createIcons();
+    }
 
     // ----------------------------------------------------
     // GEOLOKASI (Multi-Member Live Location)
@@ -526,7 +685,7 @@
     }
 
     // ----------------------------------------------------
-    // LOGIKA KALENDER 1 BULAN (DENGAN EFEK BERKEDIP MERAH)
+    // LOGIKA KALENDER 1 BULAN
     // ----------------------------------------------------
     document.getElementById("btnPrevMonth").addEventListener("click", () => {
       currentViewingDate.setMonth(currentViewingDate.getMonth() - 1);
@@ -564,7 +723,6 @@
 
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // Hari dari bulan sebelumnya
       for (let x = firstDayIndex; x > 0; x--) {
         const dayNum = prevMonthDays - x + 1;
         const cell = document.createElement("div");
@@ -573,7 +731,6 @@
         gridEl.appendChild(cell);
       }
 
-      // Hari dalam bulan aktif
       for (let day = 1; day <= totalDays; day++) {
         const formattedDay = String(day).padStart(2, '0');
         const formattedMonth = String(month + 1).padStart(2, '0');
@@ -588,13 +745,10 @@
           return dateStr >= aStart && dateStr <= aEnd;
         });
 
-        // Deteksi apakah ada notifikasi chat baru pada tanggal ini
         const hasAnyUnreadInThisDay = dayEvents.some(a => checkHasUnreadChat(a));
 
         const cell = document.createElement("div");
 
-        // Styling kondisi kolom tanggal:
-        // Jika memiliki unread chat, tambahkan class animasi 'cell-unread-blink'
         let cellBaseClass = "h-16 md:h-20 p-1.5 border rounded-xl cursor-pointer transition flex flex-col justify-between text-xs relative ";
         
         if (hasAnyUnreadInThisDay) {
@@ -863,7 +1017,6 @@
             ...data
           });
 
-          // Cek notifikasi baru saat web aktif
           if (initialLoadDone && data.lastChatSenderId && data.lastChatSenderId !== userProfile.uid) {
             const lastRead = readReceipts[docSnap.id] || 0;
             if (data.lastChatTime > lastRead) {
@@ -881,6 +1034,7 @@
 
         renderCalendar();
         renderSelectedDayAgendas();
+        renderNotificationTray();
       }, (err) => {
         console.error("Firestore Agenda Error:", err);
       });
@@ -1015,7 +1169,8 @@
       await updateDoc(doc(db, "agendas", agendaId), {
         lastChatTime: Date.now(),
         lastChatSenderId: userProfile.uid,
-        lastChatSenderName: userProfile.name
+        lastChatSenderName: userProfile.name,
+        lastChatText: text
       });
     });
 
