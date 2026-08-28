@@ -130,11 +130,9 @@
 
       <!-- Header Right: Notification Tray Toggle -->
       <div class="flex items-center gap-3">
-        <!-- Notification Bell & Tray -->
         <div class="relative">
           <button id="btnNotifTray" class="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition shadow-sm flex items-center justify-center">
             <i data-lucide="bell" class="h-5 w-5"></i>
-            <!-- Red Badge Counter -->
             <span id="notifBadgeCounter" class="hidden absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm badge-unread-ping">0</span>
           </button>
 
@@ -296,11 +294,22 @@
   <!-- MODAL CHAT ROOM PER AGENDA -->
   <div id="chatModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
     <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-xl flex flex-col h-[520px]">
+      
+      <!-- Modal Header (Title clickable -> Go to Date) -->
       <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-        <div>
-          <h4 id="chatModalTitle" class="text-base font-bold text-slate-900">Ruang Obrolan</h4>
-          <p id="chatModalSubtitle" class="text-xs text-slate-500">Diskusi seputar agenda</p>
-        </div>
+        <button id="btnChatGoToDate" title="Klik untuk melompat ke tanggal agenda ini di kalender" class="flex items-start gap-2.5 text-left p-1 -ml-1 rounded-xl hover:bg-slate-100/80 transition group max-w-[85%]">
+          <div class="h-8 w-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-indigo-600 group-hover:text-white transition">
+            <i data-lucide="calendar-days" class="h-4 w-4"></i>
+          </div>
+          <div class="overflow-hidden">
+            <div class="flex items-center gap-1.5">
+              <h4 id="chatModalTitle" class="text-base font-bold text-slate-900 truncate group-hover:text-indigo-600 transition">Ruang Obrolan</h4>
+              <i data-lucide="arrow-up-right" class="h-3.5 w-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0"></i>
+            </div>
+            <p id="chatModalSubtitle" class="text-xs text-slate-500 truncate">Klik untuk lihat di kalender</p>
+          </div>
+        </button>
+
         <button id="btnCloseChat" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
           <i data-lucide="x" class="h-5 w-5"></i>
         </button>
@@ -359,6 +368,7 @@
     let currentViewingDate = new Date();
     let selectedDateStr = new Date().toISOString().split('T')[0];
     let currentActiveChatAgendaId = null;
+    let currentActiveChatAgendaDate = null;
     let chatUnsubscribe = null;
     let map = null;
     let markers = {};
@@ -389,6 +399,9 @@
     const notifTrayUnreadText = document.getElementById("notifTrayUnreadText");
     const notifTrayList = document.getElementById("notifTrayList");
 
+    // Go To Date Button in Chat Modal
+    const btnChatGoToDate = document.getElementById("btnChatGoToDate");
+
     // Dropdown Handlers
     btnUserDropdown.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -403,7 +416,6 @@
       userDropdownMenu.classList.add("hidden");
     });
 
-    // Close Dropdowns on Click Outside
     document.addEventListener("click", () => {
       userDropdownMenu.classList.add("hidden");
       notificationTray.classList.add("hidden");
@@ -416,6 +428,23 @@
       if (confirm("Ganti profil atau keluar dari Kode Grup?")) {
         localStorage.removeItem("group_user_profile");
         location.reload();
+      }
+    });
+
+    // Go to Date Handler: Melompat ke tanggal agenda saat judul modal chat diklik
+    btnChatGoToDate.addEventListener("click", () => {
+      if (currentActiveChatAgendaDate) {
+        const targetDate = new Date(currentActiveChatAgendaDate + "T00:00:00");
+        currentViewingDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), 1);
+        selectedDateStr = currentActiveChatAgendaDate;
+
+        renderCalendar();
+        renderSelectedDayAgendas();
+
+        // Tutup modal chat
+        document.getElementById("chatModal").classList.add("hidden");
+        currentActiveChatAgendaId = null;
+        if (chatUnsubscribe) chatUnsubscribe();
       }
     });
 
@@ -537,7 +566,6 @@
     function renderNotificationTray() {
       const unreadAgendas = allAgendas.filter(a => checkHasUnreadChat(a));
       
-      // Update badge counter pada tombol bell lonceng
       if (unreadAgendas.length > 0) {
         notifBadgeCounter.textContent = unreadAgendas.length;
         notifBadgeCounter.classList.remove("hidden");
@@ -549,7 +577,6 @@
         notifTrayUnreadText.className = "text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold";
       }
 
-      // Render list di tray
       const recentChatAgendas = allAgendas
         .filter(a => a.lastChatTime)
         .sort((a, b) => (b.lastChatTime || 0) - (a.lastChatTime || 0));
@@ -597,7 +624,7 @@
         itemEl.addEventListener("click", () => {
           notificationTray.classList.add("hidden");
           markChatAsRead(item.id);
-          openChatModal(item.id, item.title);
+          openChatModal(item.id, item.title, item.start);
         });
 
         notifTrayList.appendChild(itemEl);
@@ -926,7 +953,7 @@
             
             <div class="flex items-center gap-1.5">
               ${creatorActionsHtml}
-              <button data-chat-id="${item.id}" data-chat-title="${item.title}" class="btn-open-chat relative rounded-lg ${
+              <button data-chat-id="${item.id}" data-chat-title="${item.title}" data-chat-start="${item.start}" class="btn-open-chat relative rounded-lg ${
                 hasUnread ? 'bg-rose-600 text-white hover:bg-rose-700 font-bold' : 'bg-slate-900 text-white hover:bg-slate-800'
               } px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition">
                 <i data-lucide="message-square" class="h-3.5 w-3.5"></i>
@@ -955,8 +982,9 @@
         btn.addEventListener("click", () => {
           const agendaId = btn.dataset.chatId;
           const title = btn.dataset.chatTitle;
+          const start = btn.dataset.chatStart;
           markChatAsRead(agendaId);
-          openChatModal(agendaId, title);
+          openChatModal(agendaId, title, start);
         });
       });
 
@@ -1084,17 +1112,25 @@
     });
 
     // ----------------------------------------------------
-    // CHAT ROOM PER AGENDA
+    // CHAT ROOM PER AGENDA & GO TO DATE FUNCTION
     // ----------------------------------------------------
     const chatModal = document.getElementById("chatModal");
     const chatMessages = document.getElementById("chatMessages");
     const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
 
-    function openChatModal(agendaId, agendaTitle) {
+    function openChatModal(agendaId, agendaTitle, agendaStart) {
       currentActiveChatAgendaId = agendaId;
+      currentActiveChatAgendaDate = agendaStart ? agendaStart.split('T')[0] : null;
+
       document.getElementById("chatModalTitle").textContent = agendaTitle;
-      document.getElementById("chatModalSubtitle").textContent = `Chat Room Agenda #${agendaId.slice(-4)}`;
+      
+      const formattedDate = currentActiveChatAgendaDate 
+        ? new Date(currentActiveChatAgendaDate + "T00:00:00").toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })
+        : '';
+      
+      document.getElementById("chatModalSubtitle").textContent = formattedDate ? `📅 ${formattedDate} • Klik untuk lihat di kalender` : 'Klik untuk lihat di kalender';
+      
       chatModal.classList.remove("hidden");
       lucide.createIcons();
 
